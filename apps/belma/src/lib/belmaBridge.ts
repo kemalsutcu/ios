@@ -1,3 +1,5 @@
+import branding from '../../assets/branding-data.json';
+
 /** The live HTTPS origin preserves WKWebView microphone and document APIs. */
 export const BELMA_PAGE_URL = 'https://www.yapaymevzular.com/belmabelge';
 export const BELMA_ELEMENT_TAG = 'virtari-belma-belge';
@@ -115,7 +117,18 @@ const APP_SHADOW_CSS = `
 :host { display:block!important;width:100%!important;min-height:0!important;margin:0!important;padding:0!important; }
 #card.belma-chat { width:100%!important;max-width:none!important;height:var(--virtari-vvh,100dvh)!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important; }
 #card .bc-header { flex-shrink:0!important; }
+#card .bc-brand { display:grid!important;grid-template-columns:42px minmax(0,1fr);column-gap:10px!important;row-gap:1px;align-items:center!important; }
+#card .bc-brand strong { grid-column:2;font-size:21px!important;line-height:1.15; }
 #card .bc-subtitle { display:block!important;font-size:10px!important; }
+#card .bc-brand .bc-subtitle { grid-column:2;white-space:normal!important;line-height:1.35; }
+#card .bc-app-avatar { grid-column:1;grid-row:1 / 3;width:42px;height:42px;object-fit:cover;border-radius:13px; }
+#card .bc-app-emblem { width:88px;height:88px;object-fit:cover;border-radius:24px;display:block;margin:0 auto 20px; }
+#card .bc-app-logo { display:block;width:104px;height:80px;object-fit:contain;margin:30px auto 0; }
+#card .bc-app-credit { margin:6px 2px 2px;padding:10px;border-radius:10px;background:#141922;display:flex;align-items:center;justify-content:center; }
+#card .bc-app-credit img { display:block;width:100px;height:68px;object-fit:contain; }
+#card .bc-app-voice { padding:3px 9px 3px 4px!important;gap:3px!important;min-height:40px!important; }
+#card .bc-app-voice > svg { display:none!important; }
+#card .bc-app-voice-image { width:40px;height:34px;object-fit:contain;pointer-events:none; }
 #card #input,.bc-doc-dialog textarea,.bc-doc-dialog input:not([type=file]):not([type=checkbox]) { font-size:16px!important; }
 .bc-doc-dialog { max-height:calc(var(--virtari-vvh,100dvh) - 12px)!important; }
 `;
@@ -127,10 +140,10 @@ export function buildAppBootstrapScript(): string {
     || !['/belmabelge','/belmabelge/'].includes(location.pathname)) return;
   if(window.__BELMA_IOS_BRIDGE_V1){window.__BELMA_IOS_BRIDGE_V1.refresh();return;}
   var tag=${JSON.stringify(BELMA_ELEMENT_TAG)}, css=${JSON.stringify(APP_PAGE_CSS)}, shadowCSS=${JSON.stringify(APP_SHADOW_CSS)};
-  var maxBytes=${MAX_DOWNLOAD_BYTES}, mimes=${JSON.stringify(MIME_TYPES)};
+  var maxBytes=${MAX_DOWNLOAD_BYTES}, mimes=${JSON.stringify(MIME_TYPES)}, branding=${JSON.stringify(branding)};
   var tracks=new Set(), contexts=new Set(), blobs=new Map(), blobBytes=0;
   var suspended=false, epoch=0, serial=0, readySent=false, downloadBusy=false, trustedGestureAt=0;
-  var poll=null, appPath=[], startedAt=Date.now();
+  var poll=null, appPath=[], startedAt=Date.now(), observedRoot=null, rootObserver=null;
   function host(){return document.querySelector(tag);}
   function send(value){if(window.ReactNativeWebView)window.ReactNativeWebView.postMessage(JSON.stringify(value));}
   function stopTracks(){tracks.forEach(function(t){try{t.stop();}catch(_){}});tracks.clear();}
@@ -176,13 +189,35 @@ export function buildAppBootstrapScript(): string {
     appPath.forEach(function(n){if(next.indexOf(n)===-1)n.removeAttribute('data-belma-app-path');});
     next.forEach(function(n){if(!n.hasAttribute('data-belma-app-path'))n.setAttribute('data-belma-app-path','');});appPath=next;return true;
   }
+  // Decorate the existing assistant controls without replacing their listeners or adding a second header.
+  function decorate(root,element){
+    if(!root||typeof root.querySelector!=='function')return;
+    var brand=root.querySelector('#card .bc-brand');if(!brand||typeof brand.querySelector!=='function')return;
+    function image(className,source,alt){var node=document.createElement('img');node.className=className;node.src=source;node.alt=alt;node.decoding='async';return node;}
+    if(brand&&!brand.querySelector('.bc-app-avatar'))brand.prepend(image('bc-app-avatar',branding.avatar,'Belma'));
+    var empty=root.querySelector('#card .empty-state');
+    if(empty&&!empty.querySelector('.bc-app-emblem')){
+      var emblem=empty.querySelector('.bc-emblem');var portrait=image('bc-app-emblem',branding.avatar,'');
+      if(emblem)emblem.replaceWith(portrait);else empty.prepend(portrait);
+    }
+    if(empty&&!empty.querySelector('.bc-app-logo'))empty.append(image('bc-app-logo',branding.logoLight,'Yapay Mevzular'));
+    var menu=root.querySelector('#card .bc-menu-body');
+    if(menu&&!menu.querySelector('.bc-app-credit')){var credit=document.createElement('div');credit.className='bc-app-credit';credit.append(image('',branding.logoDark,'Yapay Mevzular'));menu.append(credit);}
+    var voice=element&&element.chat&&element.chat.voice;
+    if(voice&&!voice.querySelector('.bc-app-voice-image')){voice.classList.add('bc-app-voice');voice.prepend(image('bc-app-voice-image',branding.voiceButton,''));}
+  }
   function refresh(){
     if(!document.documentElement)return;document.documentElement.setAttribute('data-belma-ios-app','');
     var style=document.getElementById('belma-ios-app-style');
     if(!style){style=document.createElement('style');style.id='belma-ios-app-style';style.textContent=css;(document.head||document.documentElement).appendChild(style);}
     var element=host(),isolated=isolate(element),root=element&&element.shadowRoot;
+    if(root&&root!==observedRoot&&typeof MutationObserver==='function'){
+      if(rootObserver)rootObserver.disconnect();observedRoot=root;
+      rootObserver=new MutationObserver(refresh);rootObserver.observe(root,{childList:true,subtree:true});
+    }
     var local=root&&root.getElementById('belma-ios-shadow-style');
     if(root&&!local){local=document.createElement('style');local.id='belma-ios-shadow-style';local.textContent=shadowCSS;root.appendChild(local);}
+    decorate(root,element);
     var controls=root&&root.querySelector('#card.belma-chat .bc-header')&&root.querySelector('#input')&&root.querySelector('#send');
     if(!readySent&&style.isConnected&&local&&local.isConnected&&isolated&&element.configured===true&&controls){
       readySent=true;send({type:'BELMA_APP_READY',version:1});if(poll)clearInterval(poll);

@@ -143,14 +143,15 @@ export default function BelmaScreen() {
       allowsBackForwardNavigationGestures={false} allowsLinkPreview={false} bounces={false}
     /> : null}
     {!ready || failure ? <View style={styles.cover} accessibilityLiveRegion="polite">
-      <Image source={require('../../assets/splash-icon.png')} style={styles.avatar} accessibilityLabel="Belma" />
-      <Text style={styles.title}>Belma</Text><Text style={styles.subtitle}>Hukuk asistanı</Text>
+      <Image source={require('../../assets/belma-avatar.jpg')} style={styles.avatar} accessibilityLabel="Belma" />
+      <Text style={styles.title}>Belma</Text><Text style={styles.subtitle}>Yapay zekâ hukuk asistanı</Text>
       {failure ? <>
         <Text style={styles.message}>{failure}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Belma’yı yeniden yükle" onPress={retry} style={styles.retry}>
           <Text style={styles.retryText}>Yeniden dene</Text>
         </Pressable>
       </> : <View style={styles.loading}><ActivityIndicator color="#53614A" /><Text style={styles.loadingText}>Belma hazırlanıyor…</Text></View>}
+      <Image source={require('../../assets/yapay-mevzular-light.png')} resizeMode="contain" style={styles.logo} accessibilityLabel="Yapay Mevzular" />
     </View> : null}
   </SafeAreaView>;
 }
@@ -159,6 +160,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FFFFFF' }, webView: { flex: 1, backgroundColor: '#FFFFFF' },
   cover: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', padding: 24 },
   avatar: { width: 104, height: 104, borderRadius: 28 },
+  logo: { position: 'absolute', bottom: 28, width: 112, height: 90 },
   title: { marginTop: 18, fontSize: 28, fontWeight: '600', color: '#202124' },
   subtitle: { marginTop: 6, fontSize: 14, color: '#777B83' },
   loading: { marginTop: 30, alignItems: 'center', gap: 12 }, loadingText: { fontSize: 14, color: '#777B83' },
