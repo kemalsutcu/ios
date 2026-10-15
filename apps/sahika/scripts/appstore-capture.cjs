@@ -13,9 +13,6 @@ const appPaths = fs.readdirSync(products, { withFileTypes: true })
     .map(app => path.join(products, entry.name, app.name)));
 if (appPaths.length !== 1) throw new Error(`Expected one simulator app, found ${appPaths.length}.`);
 const simctl = (...args) => execFileSync('xcrun', ['simctl', ...args], { stdio: 'inherit' });
-simctl('install', selection.udid, appPaths[0]);
-simctl('status_bar', selection.udid, 'override', '--time', '9:41');
-execFileSync('maestro', ['test', '--test-output-dir', path.join(output, 'maestro'), '.maestro/appstore-capture.yml'], { stdio: 'inherit' });
 
 async function recordPreview() {
   const video = path.join(output, 'Sahika_AppPreview_Raw_20s.mp4');
@@ -38,22 +35,46 @@ async function recordPreview() {
       flow.once('error', reject);
       flow.once('close', code => code === 0 ? resolve() : reject(new Error(`Preview mode changes failed: exit ${code}.`)));
     });
-    await Promise.all([recording, preview]);
+    const results = await Promise.allSettled([recording, preview]);
+    const failures = results.filter(result => result.status === 'rejected').map(result => result.reason);
+    if (failures.length) throw new AggregateError(failures, 'Recording or preview navigation failed.');
   } finally {
     clearTimeout(stop);
     clearTimeout(hardStop);
     if (recorder.exitCode === null && recorder.signalCode === null) recorder.kill('SIGINT');
     fs.closeSync(log);
   }
-  fs.writeFileSync(path.join(output, 'capture-manifest.json'), JSON.stringify({
-    bundleIdentifier: 'com.pulsevet.sahika',
-    device: selection,
-    appPath: appPaths[0],
-    capturedAt: new Date().toISOString(),
-    video: path.basename(video),
-    rawVideoRequiresAppStoreEncoding: true,
-    notes: 'Actual simulator screenshots and a 20-second recording switching between voice and text modes. No message sent and no voice session started.',
-  }, null, 2));
 }
 
-recordPreview().catch(error => { console.error(error); process.exitCode = 1; });
+async function capture() {
+  const failures = [];
+  try {
+    simctl('install', selection.udid, appPaths[0]);
+    simctl('status_bar', selection.udid, 'override', '--time', '9:41');
+    try {
+      execFileSync('maestro', ['test', '--test-output-dir', path.join(output, 'maestro'), '.maestro/appstore-capture.yml'], { stdio: 'inherit' });
+    } catch (error) {
+      failures.push(`Screenshots: ${error.message}`);
+      console.error('Screenshot flow failed; continuing with actual screen recording and diagnostic pixels.');
+    }
+    try { await recordPreview(); }
+    catch (error) { failures.push(`Preview: ${error.message}`); }
+  } finally {
+    try { simctl('io', selection.udid, 'screenshot', path.join(output, '99-final-state-diagnostic.png')); }
+    catch (error) { failures.push(`Diagnostic screenshot: ${error.message}`); }
+    fs.writeFileSync(path.join(output, 'capture-manifest.json'), JSON.stringify({
+      bundleIdentifier: 'com.pulsevet.sahika',
+      device: selection,
+      appPath: appPaths[0],
+      sourceArchiveUrl: 'https://expo.dev/artifacts/eas/bmMUO6LUBPshQFdGb_zrbDT5eU10ggKx1HKo6Pw_HQI.tar.gz',
+      capturedAt: new Date().toISOString(),
+      video: 'Sahika_AppPreview_Raw_20s.mp4',
+      rawVideoRequiresAppStoreEncoding: true,
+      failures,
+      notes: 'Actual simulator screenshots and a 20-second recording switching between voice and text modes. No message sent and no voice session started. Diagnostic pixels may show a failure and require visual review.',
+    }, null, 2));
+  }
+  if (failures.length) throw new Error(failures.join('\n'));
+}
+
+capture().catch(error => { console.error(error); process.exitCode = 1; });

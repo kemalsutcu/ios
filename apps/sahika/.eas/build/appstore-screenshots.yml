@@ -1,17 +1,35 @@
 build:
   name: Capture real Şahika App Store screens
   steps:
-    - eas/build
+    - eas/checkout
+    - run:
+        name: Download the already compiled Şahika simulator application
+        id: download_app
+        outputs: [archive_path]
+        command: |
+          set -e
+          mkdir -p ios/build/Build/Products/Release-iphonesimulator artifacts/appstore
+          CAPTURE_ARCHIVE_PATH="$PWD/artifacts/Sahika_Compiled_Simulator.tar.gz"
+          curl --fail --location --retry 2 --output "$CAPTURE_ARCHIVE_PATH" 'https://expo.dev/artifacts/eas/bmMUO6LUBPshQFdGb_zrbDT5eU10ggKx1HKo6Pw_HQI.tar.gz'
+          shasum -a 256 "$CAPTURE_ARCHIVE_PATH" > artifacts/appstore/source-archive.sha256
+          tar -xzf "$CAPTURE_ARCHIVE_PATH" -C ios/build/Build/Products/Release-iphonesimulator
+          set-output archive_path "$CAPTURE_ARCHIVE_PATH"
+    - eas/upload_artifact:
+        name: Preserve the compiled simulator application
+        inputs:
+          type: application-archive
+          path: ${ steps.download_app.archive_path }
     - eas/install_maestro:
         inputs:
           maestro_version: latest
     - run:
         name: Select App Store iPhone and collect simulator diagnostics
         id: capture_device
-        outputs: [device_identifier]
+        outputs: [device_identifier, artifact_directory]
         command: |
           CAPTURE_DEVICE_ID="$(node scripts/appstore-simulator.cjs)"
           set-output device_identifier "$CAPTURE_DEVICE_ID"
+          set-output artifact_directory "$PWD/artifacts/appstore"
     - eas/start_ios_simulator:
         inputs:
           device_identifier: ${ steps.capture_device.device_identifier }
@@ -24,5 +42,5 @@ build:
         inputs:
           type: build-artifact
           path: |
-            artifacts/appstore
+            ${ steps.capture_device.artifact_directory }
             ${ eas.env.HOME }/.maestro/tests

@@ -4,10 +4,10 @@ appId: com.pulsevet.sahika
 - extendedWaitUntil:
     visible: "(Sesli Görüşme|Sesli görüşme|SESLİ GÖRÜŞME)"
     timeout: 60000
-- assertVisible: "(Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
 - assertNotVisible: "Şahika’yı yeniden yükle"
 - takeScreenshot: 01-sahika-sesli-gorusme
-- tapOn: "(Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
+- assertVisible: "(Chat|CHAT|Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
+- tapOn: "(Chat|CHAT|Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
 - assertVisible: "(Sesli Görüşme|Sesli görüşme|SESLİ GÖRÜŞME)"
 - takeScreenshot: 02-sahika-yazili-sohbet
 - tapOn:

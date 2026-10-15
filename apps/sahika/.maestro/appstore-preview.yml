@@ -2,7 +2,7 @@ appId: com.pulsevet.sahika
 ---
 # The app is already open. Change only its actual mode; do not start a session.
 - tapOn:
-    text: "(Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
+    text: "(Chat|CHAT|Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
     waitToSettleTimeoutMs: 500
 - waitForAnimationToEnd:
     timeout: 6000
@@ -12,7 +12,7 @@ appId: com.pulsevet.sahika
 - waitForAnimationToEnd:
     timeout: 6000
 - tapOn:
-    text: "(Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
+    text: "(Chat|CHAT|Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
     waitToSettleTimeoutMs: 500
 - waitForAnimationToEnd:
     timeout: 3000
