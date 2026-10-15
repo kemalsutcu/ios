@@ -1,6 +1,6 @@
 # Şahika — Yapay Zekâ Veteriner Asistanı
 
-Bağımsız Expo SDK 57 uygulaması. Açılış ekranı doğrudan Şahika'dır. PulseVet'in Wix üzerindeki canlı HTTPS Şahika sayfası, özgün asistan arayüzü ve görselleri kullanılır. iOS kapsayıcısı yalnızca mevcut asistan bileşenini gösterir; masaüstü ve mobil üst menüler, dil seçimi, site başlığı ve alt bölümler gizlenir. Asistanın video arka planı ve kendi görüşme/sohbet arayüzü korunur.
+Bağımsız Expo SDK 57 uygulaması. Açılış ekranı doğrudan Şahika'dır. PulseVet'in Wix üzerindeki canlı HTTPS Şahika sayfası, özgün asistan arayüzü ve görselleri kullanılır. iOS kapsayıcısı masaüstü ve mobil üst menüleri, dil seçimini, web sitesinin başlığını ve alt bölümlerini gizler. Şahika'nın adı, altındaki “Yapay Zekâ Veteriner Asistanı” açıklaması ve avatarı uygulamanın kendi kimlik alanında her zaman görünür; özgün Wix başlık fontu yerel olarak paketlenir. İsimde sürekli akan mor–mavi gradyan, yumuşak parlama ve ışık geçişi bulunur. Animasyonlar arka planda durur ve sistemin hareketi azaltma tercihine uyar. Asistanın video arka planı ve kendi görüşme/sohbet arayüzü korunur.
 
 - Expo sahibi: `kemalsutcus-team`
 - Expo slug: `sahika-veteriner`

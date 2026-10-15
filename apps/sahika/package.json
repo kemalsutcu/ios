@@ -21,10 +21,12 @@
     "build:simulator": "npx --yes eas-cli@24.9.0 build --platform ios --profile simulator"
   },
   "dependencies": {
+    "@react-native-masked-view/masked-view": "0.3.2",
     "expo": "~57.0.26",
     "expo-constants": "~57.0.20",
     "expo-file-system": "~57.0.7",
     "expo-font": "~57.0.4",
+    "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.11",
     "expo-router": "~57.0.24",
     "expo-sharing": "~57.0.22",
