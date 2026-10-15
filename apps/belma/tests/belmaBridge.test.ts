@@ -163,7 +163,8 @@ test('ready waits for configuration, controls and connected isolation before rev
   app.element.parentElement = null; app.configure(); app.refresh(); assert.equal(app.messages.length, 0);
   app.element.attach(app.wrapper); app.refresh(); app.refresh();
   assert.deepEqual(app.messages.map(x => JSON.parse(x)), [{ type: 'BELMA_APP_READY', version: 1 }]);
-  assert.equal(app.styles.size, 1); assert.equal(app.shadowStyles.size, 1);
+  assert.equal(app.styles.size, 1); assert.equal(app.shadowStyles.size, 2);
+  assert.ok(app.shadowStyles.has('belma-ios-shadow-style')); assert.ok(app.shadowStyles.has('belma-ios-rich-style'));
   const capture = app.devices.getUserMedia; vm.runInContext(buildAppBootstrapScript(), app.context);
   assert.equal(app.devices.getUserMedia, capture);
 });

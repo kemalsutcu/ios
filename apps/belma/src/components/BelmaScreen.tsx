@@ -144,7 +144,7 @@ export default function BelmaScreen() {
     /> : null}
     {!ready || failure ? <View style={styles.cover} accessibilityLiveRegion="polite">
       <Image source={require('../../assets/belma-avatar.jpg')} style={styles.avatar} accessibilityLabel="Belma" />
-      <Text style={styles.title}>Belma</Text><Text style={styles.subtitle}>Yapay zekâ hukuk asistanı</Text>
+      <Text style={styles.title}>Belma</Text><Text style={styles.subtitle}>Yapay Mevzular Hukuk Asistanı</Text>
       {failure ? <>
         <Text style={styles.message}>{failure}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Belma’yı yeniden yükle" onPress={retry} style={styles.retry}>
