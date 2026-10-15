@@ -28,6 +28,12 @@
       "ios": {
         "image": "latest"
       }
+    },
+    "sahika-preview": {
+      "extends": "preview",
+      "ios": {
+        "image": "latest"
+      }
     }
   },
   "submit": {
