@@ -1,0 +1,102 @@
+{
+  "sourcePage": "https://www.pulseveteriner.com/sahika",
+  "source": "Public live Wix custom element configuration",
+  "downloadedAt": "2026-10-15T09:15:12.767006+00:00",
+  "originals": [
+    {
+      "path": "wix/avatar-original.png",
+      "sha256": "4dc05a45b08ad190809cbc2771bb8f285210cb2d635662b375fffc39b0f110bc",
+      "bytes": 89297,
+      "width": 200,
+      "height": 200,
+      "mode": "RGBA",
+      "url": "https://static.wixstatic.com/media/e870db_010148fc022844da8cec24c216a6a5d8~mv2.png",
+      "transformation": "None; original bytes retained"
+    },
+    {
+      "path": "wix/whatsapp-original.png",
+      "sha256": "fdc65bc19fad0d023a27b989533e47595a8ec2790993d68f8bc8026c5729f9f9",
+      "bytes": 72431,
+      "width": 279,
+      "height": 271,
+      "mode": "RGBA",
+      "url": "https://static.wixstatic.com/media/e870db_76616337e3974b468b70f4a8112bd034~mv2.png",
+      "transformation": "None; original bytes retained"
+    },
+    {
+      "path": "wix/maps-original.png",
+      "sha256": "1598c5302a541d4b3b3cd3f939b4613f97b640994f449e213eafc86433afe466",
+      "bytes": 53221,
+      "width": 300,
+      "height": 300,
+      "mode": "RGBA",
+      "url": "https://static.wixstatic.com/media/e870db_7ceff734005c4e45b725897da908f219~mv2.png",
+      "transformation": "None; original bytes retained"
+    },
+    {
+      "path": "wix/phone-original.png",
+      "sha256": "0960bbd4cd0bbd44e2d3418be68c98c61dc1f7029726253bb03a669671079506",
+      "bytes": 19251,
+      "width": 300,
+      "height": 300,
+      "mode": "RGBA",
+      "url": "https://static.wixstatic.com/media/e870db_13cd28db9bae46b3b3f2dd40c1564b5b~mv2.png",
+      "transformation": "None; original bytes retained"
+    }
+  ],
+  "derivatives": [
+    {
+      "path": "sahika-avatar.png",
+      "sha256": "4dc05a45b08ad190809cbc2771bb8f285210cb2d635662b375fffc39b0f110bc",
+      "bytes": 89297,
+      "width": 200,
+      "height": 200,
+      "mode": "RGBA",
+      "source": "wix/avatar-original.png",
+      "transformation": "Original avatar bytes copied without change"
+    },
+    {
+      "path": "splash-icon.png",
+      "sha256": "4dc05a45b08ad190809cbc2771bb8f285210cb2d635662b375fffc39b0f110bc",
+      "bytes": 89297,
+      "width": 200,
+      "height": 200,
+      "mode": "RGBA",
+      "source": "wix/avatar-original.png",
+      "transformation": "Original avatar bytes copied without change"
+    },
+    {
+      "path": "icon.png",
+      "sha256": "5bb7dead595f79f63be017a0bc49feaa1e6f0b00f6e44f2591a6a7f395ba6693",
+      "bytes": 1102021,
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGB",
+      "source": "wix/avatar-original.png",
+      "transformation": "Avatar resized to 1024x1024 using Lanczos; alpha composited on opaque #11131C"
+    },
+    {
+      "path": "adaptive-icon.png",
+      "sha256": "4130005e5b8c76548d3401c313ba28dad8ba50dec8b2c073cbe15dd854eb4d13",
+      "bytes": 667005,
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "source": "wix/avatar-original.png",
+      "transformation": "Avatar resized to 664x664 using Lanczos and centered in a transparent 1024x1024 canvas"
+    },
+    {
+      "path": "favicon.png",
+      "sha256": "3fc58cc87cac940a9fb936bb3eae4e46a695c37399414ae4309c6829e33916e0",
+      "bytes": 10472,
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA",
+      "source": "wix/avatar-original.png",
+      "transformation": "Avatar resized to 64x64 using Lanczos; original transparency preserved"
+    }
+  ],
+  "limitations": [
+    "The original Wix avatar is 200x200 pixels; larger app icons are technical resizes, with no AI regeneration."
+  ]
+}
