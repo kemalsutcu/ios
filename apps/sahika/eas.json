@@ -7,7 +7,9 @@
     "preview": {
       "distribution": "internal",
       "environment": "preview",
-      "ios": { "simulator": false }
+      "ios": {
+        "simulator": false
+      }
     },
     "production": {
       "distribution": "store",
@@ -17,8 +19,18 @@
     "simulator": {
       "distribution": "internal",
       "environment": "preview",
-      "ios": { "simulator": true }
+      "ios": {
+        "simulator": true
+      }
+    },
+    "sahika-simulator": {
+      "extends": "simulator",
+      "ios": {
+        "image": "latest"
+      }
     }
   },
-  "submit": { "production": {} }
+  "submit": {
+    "production": {}
+  }
 }
