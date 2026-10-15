@@ -56,3 +56,5 @@ Test kaydına cihaz modeli, iOS sürümü, build kimliği/tarihi ve bulunan hata
 ## Sabit SDK düzeltmesi
 
 `patches/@elevenlabs+client+1.28.0.patch`, kilitli ElevenLabs istemcisinin iki başlangıç davranışını düzeltir: `initialMicMuted` seçeneği ile mikrofon kaynağı ilk yayınından önce sessize alınır; WebSocket el sıkışması 25 saniyeyi aşarsa gerçek bağlantı kapatılır. `npm ci` sonundaki `patch-package --error-on-fail` adımı yamayı uygular. SDK yükseltilirken bu davranışlar tekrar doğrulanmalı; yama sessizce atlanmamalıdır. Mikrofon yayını ve yarım kalan bağlantı davranışları gerçek SDK sınıfları üzerinde taklit fiziksel aygıt/bağlantıyla test edilir. Bunlar iPhone üzerinde yapılmış kayıt testleri değildir.
+
+Native ses bağımlılıkları `@livekit/react-native@2.12.0` ve `@livekit/react-native-webrtc@144.1.2` olarak birlikte sabitlenmiştir. WebRTC 144.2.0, iOS framework adını `LiveKitWebRTC` olarak değiştirdiğinden eski `<WebRTC/WebRTC.h>` başlıklarını kullanan LiveKit 2.12 ile eşleştirilmemelidir. Sürümler yalnız npm peer aralığına bakılarak yükseltilmemelidir; native Xcode derlemesiyle birlikte doğrulanmalıdır.
