@@ -1,11 +1,12 @@
 # Şahika — Yapay Zekâ Veteriner Asistanı
 
-Bağımsız Expo SDK 57 uygulaması. Açılış ekranı doğrudan Şahika'dır. PulseVet'in Wix üzerindeki canlı HTTPS Şahika sayfası, özgün arayüzü ve görselleri kullanılır. iOS kapsayıcısı site gezinti alanlarını gizler; Şahika başlığı, video arka planı ve asistan bileşeninin kendi arayüzüne müdahale etmez.
+Bağımsız Expo SDK 57 uygulaması. Açılış ekranı doğrudan Şahika'dır. PulseVet'in Wix üzerindeki canlı HTTPS Şahika sayfası, özgün asistan arayüzü ve görselleri kullanılır. iOS kapsayıcısı yalnızca mevcut asistan bileşenini gösterir; masaüstü ve mobil üst menüler, dil seçimi, site başlığı ve alt bölümler gizlenir. Asistanın video arka planı ve kendi görüşme/sohbet arayüzü korunur.
 
 - Expo sahibi: `kemalsutcus-team`
 - Expo slug: `sahika-veteriner`
 - iOS bundle identifier / Android package: `com.pulsevet.sahika`
 - Canlı kaynak: https://www.pulseveteriner.com/sahika
+- App Store Connect: `6823163636` — Şahika: Veteriner Asistanı (telefondaki ad: Şahika)
 
 ## Yerel geliştirme
 
@@ -29,6 +30,8 @@ npm run build:preview
 ```
 
 `preview` kayıtlı gerçek cihaz için imzalı dahili dağıtım, `simulator` iOS simülatörü, `production` App Store derlemesi içindir. Gerçek cihaz derlemesi için Apple Developer imzalama bilgileri gerekir. Expo EAS projesi bu uygulamanın kendi kimliğiyle bağlanmalıdır.
+
+Arkadaşlara TestFlight dağıtımı için `production` paketi App Store Connect'e yüklenir ve ilk dış test sürümü Apple'ın beta incelemesinden geçer. `submit.production.ios.ascAppId` doğru uygulama kaydına bağlıdır; App Store dağıtım profili ve gönderim kimlik doğrulaması ayrıca hazırlanmalıdır. Hesapta bekleyen geliştirici sözleşmesi hesap sahibi tarafından incelenip kabul edilmelidir. Ad Hoc `preview` paketi yalnızca imzalama profilindeki cihazlara kurulabilir; yeni arkadaş cihazları için profil ve paket yenilenir.
 
 Uygulama canlı Wix hizmetine ve internet bağlantısına ihtiyaç duyar. Ajan, sürüm, bilgi bankası ve görüşme ayarları canlı sitenin yapılandırmasından alınır; uygulamada eski bir ajan veya dal kimliği sabitlenmez. Web önizlemesi sayfayı iframe içinde açar; iOS'a özgü site gezinti uyarlaması web önizlemesinde uygulanmaz.
 

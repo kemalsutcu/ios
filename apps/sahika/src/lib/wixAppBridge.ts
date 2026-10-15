@@ -70,21 +70,32 @@ export function parseBridgeMessage(raw: unknown, sourceUrl: unknown): AppBridgeM
   return null;
 }
 
-/** Changes only Wix page chrome/unused section height; the assistant's shadow DOM stays original. */
+/** Only the existing assistant and its ancestor chain form the application canvas. */
 export const APP_PAGE_CSS = `
-html[data-sahika-ios-app] #SITE_HEADER,
-html[data-sahika-ios-app] #SITE_FOOTER,
-html[data-sahika-ios-app] #comp-muwqd1yr_r_comp-mro1qlny,
-html[data-sahika-ios-app] #comp-muwqd23k { display:none!important; }
-html[data-sahika-ios-app] #comp-muwqd22y,
-html[data-sahika-ios-app] #comp-muwqd22y > div,
-html[data-sahika-ios-app] #comp-muwqd236 {
-  height:auto!important;min-height:0!important;
+html[data-sahika-ios-app] [data-sahika-app-path]:not(${SAHIKA_ELEMENT_TAG}) > :not([data-sahika-app-path]):not([data-pv-sahika-backdrop]) {
+  display:none!important;
 }
-html[data-sahika-ios-app] #comp-muwqd22y > div {
-  grid-template-rows:minmax(0,auto)!important;
+html[data-sahika-ios-app] [data-sahika-app-path] {
+  display:block!important;position:static!important;inset:auto!important;
+  width:100%!important;min-width:0!important;max-width:none!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0!important;border:0!important;
+  box-sizing:border-box!important;overflow:visible!important;
+  grid-area:auto!important;align-self:auto!important;justify-self:auto!important;
+  transform:none!important;translate:none!important;scale:none!important;rotate:none!important;
+  background:transparent!important;box-shadow:none!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  animation:none!important;transition:none!important;
 }
-html[data-sahika-ios-app] { -webkit-text-size-adjust:100%; }
+html[data-sahika-ios-app] [data-sahika-app-path]::before,
+html[data-sahika-ios-app] [data-sahika-app-path]::after { display:none!important; }
+html[data-sahika-ios-app],
+html[data-sahika-ios-app] body[data-sahika-app-path] {
+  min-height:100%!important;overflow-x:hidden!important;-webkit-text-size-adjust:100%;
+}
+html[data-sahika-ios-app] ${SAHIKA_ELEMENT_TAG}[data-sahika-app-path] {
+  min-height:100vh!important;min-height:100dvh!important;
+}
 `;
 
 /** Runs in the main HTTPS document before Wix starts, and again idempotently after load. */
@@ -107,8 +118,27 @@ export function buildAppBootstrapScript(): string {
   var lastState = null;
   var poll = null;
   var observer = null;
+  var appPath = [];
   var startedAt = Date.now();
   function host() { return document.querySelector(tag); }
+  function isolateAssistant(element) {
+    if (!element || !document.body) return false;
+    var nextPath = [];
+    for (var node = element; node; node = node.parentElement) {
+      nextPath.push(node);
+      if (node === document.body) break;
+    }
+    if (nextPath[nextPath.length - 1] !== document.body) return false;
+    // Keep the live element connected: moving it would tear down its voice session.
+    appPath.forEach(function (node) {
+      if (nextPath.indexOf(node) === -1) node.removeAttribute('data-sahika-app-path');
+    });
+    nextPath.forEach(function (node) {
+      if (!node.hasAttribute('data-sahika-app-path')) node.setAttribute('data-sahika-app-path','');
+    });
+    appPath = nextPath;
+    return true;
+  }
   function send(value) {
     if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(value));
   }
@@ -166,6 +196,7 @@ export function buildAppBootstrapScript(): string {
       style.textContent = css; (document.head || document.documentElement).appendChild(style);
     }
     var element = host();
+    var isolated = isolateAssistant(element);
     var root = element && element.shadowRoot;
     // ui-ready fires before loadConfig. Wait for the real configured assistant controls.
     var controls = root && root.querySelector('button.vf-main,button.main,button.vf-start');
@@ -174,14 +205,12 @@ export function buildAppBootstrapScript(): string {
     // Both deployed 65.2 and uploaded 65.3 publish ui-visible only after config/bridge setup.
     var configured = element && (element.hasAttribute('data-sahika-ready') ||
       (boot && boot.hidden && !element.hasAttribute('data-sahika-loading')));
-    if (!readySent && style.isConnected && configured && controls && region) {
+    if (!readySent && style.isConnected && isolated && configured && controls && region) {
       readySent = true;
       send({type:'SAHIKA_APP_READY',version:1});
       if (poll) clearInterval(poll);
-      if (observer) observer.disconnect();
     } else if (Date.now() - startedAt > 90000) {
       if (poll) clearInterval(poll);
-      if (observer) observer.disconnect();
     }
   }
   document.addEventListener('ui-state', function (event) {
@@ -230,6 +259,8 @@ export function buildAppBootstrapScript(): string {
   window.addEventListener('pagehide', function () { transition('background'); });
   window.__SAHIKA_IOS_BRIDGE_V1 = { refresh:refresh, transition:transition };
   if (typeof MutationObserver === 'function' && document.documentElement) {
+    // Wix can hydrate mobile headers, pinned menus or a replacement page after READY.
+    // Shadow-root conversation updates are outside this lightweight document observer.
     observer = new MutationObserver(refresh);
     observer.observe(document.documentElement,{childList:true,subtree:true});
   }
