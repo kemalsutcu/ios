@@ -1,0 +1,86 @@
+diff --git a/node_modules/@elevenlabs/client/dist/utils/BaseConnection.d.ts b/node_modules/@elevenlabs/client/dist/utils/BaseConnection.d.ts
+index 4d6c658..eeea864 100644
+--- a/node_modules/@elevenlabs/client/dist/utils/BaseConnection.d.ts
++++ b/node_modules/@elevenlabs/client/dist/utils/BaseConnection.d.ts
+@@ -17,6 +17,8 @@ export type OnDisconnectCallback = (details: DisconnectionDetails) => void;
+ export type OnMessageCallback = (event: IncomingSocketEvent) => void;
+ export type OnOutgoingMessageCallback = (event: any) => void;
+ export type BaseSessionConfig = {
++    /** App patch: mute a WebRTC microphone before its initial publication. */
++    initialMicMuted?: boolean;
+     origin?: string;
+     authorization?: string;
+     livekitUrl?: string;
+diff --git a/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js b/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js
+index fbf1fa8..718fc0a 100644
+--- a/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js
++++ b/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js
+@@ -152,6 +152,8 @@ export class WebRTCConnection extends BaseConnection {
+     };
+     constructor(room, conversationId, inputFormat, outputFormat, config = {}) {
+         super(config);
++        // App opt-in: publish a muted source from the first packet, before callbacks run.
++        this._isMuted = config.initialMicMuted === true;
+         this.room = room;
+         this.conversationId = conversationId;
+         this.inputFormat = inputFormat;
+@@ -542,12 +544,16 @@ export class WebRTCConnection extends BaseConnection {
+         this.setupInputAnalyser(audioTrack.mediaStreamTrack);
+     }
+     async enableMicrophone(inputDeviceId) {
+-        if (!inputDeviceId) {
++        if (!inputDeviceId && !this._isMuted) {
+             await this.room.localParticipant.setMicrophoneEnabled(true);
+             return;
+         }
+         const audioTrack = await this.createMicrophoneTrack(inputDeviceId);
+         try {
++            // Muting after publish can transmit speech during the connection handshake.
++            if (this._isMuted) {
++                await audioTrack.mute();
++            }
+             await this.room.localParticipant.publishTrack(audioTrack, {
+                 name: "microphone",
+                 source: Track.Source.Microphone,
+@@ -562,7 +568,7 @@ export class WebRTCConnection extends BaseConnection {
+     }
+     createMicrophoneTrack(deviceId) {
+         return createLocalAudioTrack({
+-            deviceId: { exact: deviceId },
++            ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+             echoCancellation: true,
+             noiseSuppression: true,
+             autoGainControl: true,
+diff --git a/node_modules/@elevenlabs/client/dist/utils/WebSocketConnection.js b/node_modules/@elevenlabs/client/dist/utils/WebSocketConnection.js
+index a321954..998e336 100644
+--- a/node_modules/@elevenlabs/client/dist/utils/WebSocketConnection.js
++++ b/node_modules/@elevenlabs/client/dist/utils/WebSocketConnection.js
+@@ -73,6 +73,7 @@ export class WebSocketConnection extends BaseConnection {
+     }
+     static async create(config) {
+         let socket = null;
++        let handshakeTimer;
+         try {
+             let url;
+             let protocols;
+@@ -109,6 +110,10 @@ export class WebSocketConnection extends BaseConnection {
+             }
+             socket = new WebSocket(url, protocols);
+             const conversationConfig = await new Promise((resolve, reject) => {
++                // A half-open socket must not retain the provider's pending-session
++                // lock forever. Rejecting reaches the catch below, which closes
++                // the actual transport before the caller can retry.
++                handshakeTimer = setTimeout(() => reject(new SessionConnectionError("WebSocket conversation setup timed out.")), 25000);
+                 socket.addEventListener("open", () => {
+                     if (config.orchestrator) {
+                         socket?.send(JSON.stringify(constructEnclaveSetupConfig(config.orchestrator)));
+@@ -161,6 +166,9 @@ export class WebSocketConnection extends BaseConnection {
+             socket?.close();
+             throw error;
+         }
++        finally {
++            clearTimeout(handshakeTimer);
++        }
+     }
+     close() {
+         this.pendingAudioEvents = [];

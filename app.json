@@ -46,6 +46,15 @@
           "imageWidth": 170,
           "backgroundColor": "#F6F6F0"
         }
+      ],
+      "@livekit/react-native-expo-plugin",
+      "@config-plugins/react-native-webrtc",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Şahika ile sesli görüşebilmeniz için mikrofon erişimi gerekir.",
+          "enableBackgroundRecording": false
+        }
       ]
     ],
     "extra": {
