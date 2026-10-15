@@ -1,0 +1,14 @@
+appId: com.pulsevet.sahika
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "(Sesli Görüşme|Sesli görüşme|SESLİ GÖRÜŞME)"
+    timeout: 90000
+- assertNotVisible: "Şahika’yı yeniden yükle"
+- takeScreenshot: 01-fullscreen-voice
+- tapOn: "(Chat|CHAT|Yazılı Sohbet|Yazılı sohbet|YAZILI SOHBET)"
+- takeScreenshot: 02-fullscreen-chat
+# Open the real composer without sending a message or starting a voice session.
+- tapOn:
+    text: "Şahika’ya Mesaj"
+- takeScreenshot: 03-fullscreen-chat-keyboard

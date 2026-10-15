@@ -1,6 +1,10 @@
 # Şahika — Yapay Zekâ Veteriner Asistanı
 
-Bağımsız Expo SDK 57 uygulaması. Açılış ekranı doğrudan Şahika'dır. PulseVet'in Wix üzerindeki canlı HTTPS Şahika sayfası, özgün asistan arayüzü ve görselleri kullanılır. iOS kapsayıcısı masaüstü ve mobil üst menüleri, dil seçimini, web sitesinin başlığını ve alt bölümlerini gizler. Şahika'nın adı, altındaki “Yapay Zekâ Veteriner Asistanı” açıklaması ve avatarı uygulamanın kendi kimlik alanında her zaman görünür; özgün Wix başlık fontu yerel olarak paketlenir. İsimde sürekli akan mor–mavi gradyan, yumuşak parlama ve ışık geçişi bulunur. Animasyonlar arka planda durur ve sistemin hareketi azaltma tercihine uyar. Asistanın video arka planı ve kendi görüşme/sohbet arayüzü korunur.
+Bağımsız Expo SDK 57 uygulaması. Açılış ekranı doğrudan Şahika'dır. PulseVet'in Wix üzerindeki canlı HTTPS Şahika sayfası, özgün asistan arayüzü ve görselleri kullanılır. iOS kapsayıcısı masaüstü ve mobil üst menüleri, dil seçimini, web sitesinin başlığını ve alt bölümlerini gizler. Şahika adı, açıklaması, avatarı, görüşme ve küçük PulseVet × Yapay Mevzular logoları tek WebView tuvalinde aynı video arka planını paylaşır. Ayrı yerel sabit başlık bulunmaz. Özgün başlık fontu, avatar ve sağlanan iki marka logosu uygulamada paketlenir; isimde mor–mavi gradyan, parlama ve sürekli shimmer vardır. Sistem hareketi azaltma tercihi korunur.
+
+Ekran kullanılabilir yüksekliğe flex düzeniyle sığar; dış sayfa ve WebView kaydırması kapalıdır. Uzun konuşmalarda mesaj geçmişi kendi içinde kayar. Klavye ve pencere boyutu değişikliklerinde `visualViewport` yüksekliği kullanılır; dar yükseklikte avatar ve başlık yan yana küçülür. Yerel güvenli alan kenarları belgeye aktarılır ve yalnızca bir kez uygulanır. Canlı asistan öğesi ve oturumu taşınmaz. Kaynak bileşenin shadow DOM'u yeniden oluştuğunda yerleşim geri uygulanır.
+
+Marka varlıkları veya `appLayoutRuntime` değiştiğinde `npm run generate:branding` çalıştırın. Üretilen JavaScript metni Hermes üzerinde `Function.toString()` kullanmadan WKWebView'a iletilir.
 
 - Expo sahibi: `kemalsutcus-team`
 - Expo slug: `sahika-veteriner`
