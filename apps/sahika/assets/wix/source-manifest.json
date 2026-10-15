@@ -42,6 +42,13 @@
       "mode": "RGBA",
       "url": "https://static.wixstatic.com/media/e870db_13cd28db9bae46b3b3f2dd40c1564b5b~mv2.png",
       "transformation": "None; original bytes retained"
+    },
+    {
+      "path": "fonts/mouzambik-inktrap-italic.ttf",
+      "sha256": "442116ff168d15733604c5e1c788ed4ff889258c9ee069b0b7fecdccd4ed825f",
+      "bytes": 56680,
+      "url": "https://static.wixstatic.com/ufonts/99aa9e_688116acc9734e0c807094899d53bb13/ttf/file.ttf",
+      "transformation": "None; original Wix Şahika heading font bytes retained"
     }
   ],
   "derivatives": [
@@ -114,7 +121,7 @@
     }
   ],
   "limitations": [
-    "The live Wix page continues to own its conversation interface and CMS assets. Bundled native launch, loading and retry branding uses the user-provided artwork."
+    "The live Wix page continues to own its conversation interface and CMS assets. The permanent native Şahika identity uses the supplied avatar and original Wix heading font; website navigation and duplicate website branding are hidden."
   ],
   "brandingUpdatedAt": "2026-10-15T10:16:55.777292+00:00",
   "userProvidedOriginals": [

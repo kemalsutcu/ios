@@ -4,6 +4,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
+import SahikaIdentity from './SahikaIdentity';
 import {
   buildAppBootstrapScript,
   buildAppTransitionScript,
@@ -23,6 +24,7 @@ export default function SahikaScreen() {
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [generation, setGeneration] = useState(0);
   const [ready, setReady] = useState(false);
+  const [identityReady, setIdentityReady] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const externalBusy = useRef(false);
   const lastExternal = useRef({ url: '', time: 0 });
@@ -108,9 +110,12 @@ export default function SahikaScreen() {
     stopCapture();
     setReady(false); setFailure(null); setGeneration(value => value + 1);
   };
+  const identityDidLoad = useCallback(() => setIdentityReady(true), []);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom', 'left', 'right']}>
+      <SahikaIdentity onReady={identityDidLoad} />
+      <View style={styles.conversation}>
       {!failure ? <WebView
         key={generation}
         ref={webView}
@@ -156,11 +161,8 @@ export default function SahikaScreen() {
         allowsBackForwardNavigationGestures={false}
         bounces={false}
       /> : null}
-      {!ready || failure ? <View style={styles.cover} accessibilityLiveRegion="polite">
+      {!ready || !identityReady || failure ? <View style={styles.cover} accessibilityLiveRegion="polite">
         <View style={styles.coverContent}>
-          <Image source={require('../../assets/sahika-avatar.png')} style={styles.avatar} accessibilityLabel="Şahika" />
-          <Text style={styles.title}>Şahika</Text>
-          <Text style={styles.subtitle}>Yapay Zekâ Veteriner Asistanı</Text>
           {failure ? <>
             <Text style={styles.message}>{failure}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Şahika’yı yeniden yükle" onPress={retry} style={styles.retry}>
@@ -178,19 +180,18 @@ export default function SahikaScreen() {
           accessibilityLabel="PulseVet Veteriner Kliniği, Acıbadem"
         />
       </View> : null}
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FFFFFF' },
+  conversation: { flex: 1, minHeight: 0 },
   webView: { flex: 1, backgroundColor: '#FFFFFF' },
   cover: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', backgroundColor: '#FFFFFF', padding: 24 },
   coverContent: { flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' },
   clinicLogo: { width: 82, height: 114, marginTop: 20 },
-  avatar: { width: 156, height: 156, borderRadius: 78, marginBottom: 22 },
-  title: { fontSize: 38, fontWeight: '600', letterSpacing: -1, color: '#172020' },
-  subtitle: { marginTop: 8, fontSize: 15, color: '#526464', textAlign: 'center' },
   loading: { marginTop: 32, alignItems: 'center', gap: 12 },
   loadingText: { fontSize: 14, color: '#526464' },
   message: { marginTop: 28, maxWidth: 320, fontSize: 15, lineHeight: 22, textAlign: 'center', color: '#526464' },
