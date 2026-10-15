@@ -157,18 +157,26 @@ export default function SahikaScreen() {
         bounces={false}
       /> : null}
       {!ready || failure ? <View style={styles.cover} accessibilityLiveRegion="polite">
-        <Image source={require('../../assets/sahika-avatar.png')} style={styles.avatar} accessibilityLabel="Şahika" />
-        <Text style={styles.title}>Şahika</Text>
-        <Text style={styles.subtitle}>Yapay Zekâ Veteriner Asistanı</Text>
-        {failure ? <>
-          <Text style={styles.message}>{failure}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel="Şahika’yı yeniden yükle" onPress={retry} style={styles.retry}>
-            <Text style={styles.retryText}>Yeniden dene</Text>
-          </Pressable>
-        </> : <View style={styles.loading}>
-          <ActivityIndicator color="#243434" />
-          <Text style={styles.loadingText}>Şahika hazırlanıyor…</Text>
-        </View>}
+        <View style={styles.coverContent}>
+          <Image source={require('../../assets/sahika-avatar.png')} style={styles.avatar} accessibilityLabel="Şahika" />
+          <Text style={styles.title}>Şahika</Text>
+          <Text style={styles.subtitle}>Yapay Zekâ Veteriner Asistanı</Text>
+          {failure ? <>
+            <Text style={styles.message}>{failure}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="Şahika’yı yeniden yükle" onPress={retry} style={styles.retry}>
+              <Text style={styles.retryText}>Yeniden dene</Text>
+            </Pressable>
+          </> : <View style={styles.loading}>
+            <ActivityIndicator color="#243434" />
+            <Text style={styles.loadingText}>Şahika hazırlanıyor…</Text>
+          </View>}
+        </View>
+        <Image
+          source={require('../../assets/pulsevet-logo.png')}
+          style={styles.clinicLogo}
+          resizeMode="contain"
+          accessibilityLabel="PulseVet Veteriner Kliniği, Acıbadem"
+        />
       </View> : null}
     </SafeAreaView>
   );
@@ -177,7 +185,9 @@ export default function SahikaScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FFFFFF' },
   webView: { flex: 1, backgroundColor: '#FFFFFF' },
-  cover: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', padding: 28 },
+  cover: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', backgroundColor: '#FFFFFF', padding: 24 },
+  coverContent: { flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' },
+  clinicLogo: { width: 82, height: 114, marginTop: 20 },
   avatar: { width: 156, height: 156, borderRadius: 78, marginBottom: 22 },
   title: { fontSize: 38, fontWeight: '600', letterSpacing: -1, color: '#172020' },
   subtitle: { marginTop: 8, fontSize: 15, color: '#526464', textAlign: 'center' },

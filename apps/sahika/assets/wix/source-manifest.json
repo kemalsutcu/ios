@@ -1,6 +1,6 @@
 {
   "sourcePage": "https://www.pulseveteriner.com/sahika",
-  "source": "Public live Wix custom element configuration",
+  "source": "Public live Wix custom element configuration and user-provided Şahika/PulseVet brand assets",
   "downloadedAt": "2026-10-15T09:15:12.767006+00:00",
   "originals": [
     {
@@ -47,56 +47,97 @@
   "derivatives": [
     {
       "path": "sahika-avatar.png",
-      "sha256": "4dc05a45b08ad190809cbc2771bb8f285210cb2d635662b375fffc39b0f110bc",
-      "bytes": 89297,
-      "width": 200,
-      "height": 200,
+      "sha256": "5bb2b040904a20aab1e1f57bb6362afe8e3cb50456a93814a0ce8e115a735bc6",
+      "bytes": 472738,
+      "width": 512,
+      "height": 512,
       "mode": "RGBA",
-      "source": "wix/avatar-original.png",
-      "transformation": "Original avatar bytes copied without change"
+      "source": "user upload: ŞahikaAvatar(6).png",
+      "transformation": "Lanczos resize to 512x512; original transparency preserved"
     },
     {
       "path": "splash-icon.png",
-      "sha256": "4dc05a45b08ad190809cbc2771bb8f285210cb2d635662b375fffc39b0f110bc",
-      "bytes": 89297,
-      "width": 200,
-      "height": 200,
+      "sha256": "5bb2b040904a20aab1e1f57bb6362afe8e3cb50456a93814a0ce8e115a735bc6",
+      "bytes": 472738,
+      "width": 512,
+      "height": 512,
       "mode": "RGBA",
-      "source": "wix/avatar-original.png",
-      "transformation": "Original avatar bytes copied without change"
+      "source": "user upload: ŞahikaAvatar(6).png",
+      "transformation": "Lanczos resize to 512x512; original transparency preserved"
     },
     {
       "path": "icon.png",
-      "sha256": "5bb7dead595f79f63be017a0bc49feaa1e6f0b00f6e44f2591a6a7f395ba6693",
-      "bytes": 1102021,
+      "sha256": "f6bbdb31e2149a5a09de9f0821311539f76c65ffcbe169f6935fe525bb78a43c",
+      "bytes": 1415754,
       "width": 1024,
       "height": 1024,
       "mode": "RGB",
-      "source": "wix/avatar-original.png",
-      "transformation": "Avatar resized to 1024x1024 using Lanczos; alpha composited on opaque #11131C"
+      "source": "user upload: ŞahikaAvatar(6).png",
+      "transformation": "Lanczos resize to 1024x1024; alpha composited on opaque #FFFFFF for iOS app icon"
     },
     {
       "path": "adaptive-icon.png",
-      "sha256": "4130005e5b8c76548d3401c313ba28dad8ba50dec8b2c073cbe15dd854eb4d13",
-      "bytes": 667005,
+      "sha256": "f18fa63bd061321222137e9adba76a13c3551d94752058d0013fab1545924964",
+      "bytes": 770564,
       "width": 1024,
       "height": 1024,
       "mode": "RGBA",
-      "source": "wix/avatar-original.png",
-      "transformation": "Avatar resized to 664x664 using Lanczos and centered in a transparent 1024x1024 canvas"
+      "source": "user upload: ŞahikaAvatar(6).png",
+      "transformation": "Lanczos resize to 664x664, centered in transparent 1024x1024 canvas"
     },
     {
       "path": "favicon.png",
-      "sha256": "3fc58cc87cac940a9fb936bb3eae4e46a695c37399414ae4309c6829e33916e0",
-      "bytes": 10472,
+      "sha256": "dacd47eb080ff053934c27fc9e1a6236344e3ba2dba4b2bf7c699b153d6626fa",
+      "bytes": 11298,
       "width": 64,
       "height": 64,
       "mode": "RGBA",
-      "source": "wix/avatar-original.png",
-      "transformation": "Avatar resized to 64x64 using Lanczos; original transparency preserved"
+      "source": "user upload: ŞahikaAvatar(6).png",
+      "transformation": "Lanczos resize to 64x64; original transparency preserved"
+    },
+    {
+      "path": "pulsevet-logo.png",
+      "sha256": "49bef66cf29b044a3b7b9149a05ed7f50cd83e69a6a8e0cc71317dafff919cbe",
+      "bytes": 67944,
+      "width": 400,
+      "height": 552,
+      "mode": "RGBA",
+      "source": "user upload: PulseVet_Logo_4096_Transparan(2).png",
+      "transformation": "Transparent padding cropped to alpha bounds (292,75,1630,1923); proportional Lanczos resize within 400x560; original transparency preserved"
+    },
+    {
+      "path": "branding/pulsevet-logo-original.svg",
+      "sha256": "0e01f3f7cbf2ee5f76d93f1fe699df05ac0b5e86e618d136c85a38a82637181a",
+      "bytes": 51158,
+      "source": "user upload: PulseVet_Logo_Kirpilmis(1).svg",
+      "transformation": "None; original supplied SVG bytes retained"
     }
   ],
   "limitations": [
-    "The original Wix avatar is 200x200 pixels; larger app icons are technical resizes, with no AI regeneration."
+    "The live Wix page continues to own its conversation interface and CMS assets. Bundled native launch, loading and retry branding uses the user-provided artwork."
+  ],
+  "brandingUpdatedAt": "2026-10-15T10:16:55.777292+00:00",
+  "userProvidedOriginals": [
+    {
+      "uploadedName": "ŞahikaAvatar(6).png",
+      "sha256": "e7b7369cc84dfbe0c0e92bdae46ad567f3a0a0aa7ac6789901b45db4ec5bc6c9",
+      "bytes": 2809352,
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA"
+    },
+    {
+      "uploadedName": "PulseVet_Logo_4096_Transparan(2).png",
+      "sha256": "c0762b8e342ca8cfa13def2c3c43e9bc4cf82214c049eb04fbd082fbd9205034",
+      "bytes": 368815,
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA"
+    },
+    {
+      "uploadedName": "PulseVet_Logo_Kirpilmis(1).svg",
+      "sha256": "0e01f3f7cbf2ee5f76d93f1fe699df05ac0b5e86e618d136c85a38a82637181a",
+      "bytes": 51158
+    }
   ]
 }
