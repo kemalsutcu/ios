@@ -1,4 +1,5 @@
 import branding from '../../assets/branding-data.json';
+import { buildRichTextAdapterScript } from './belmaRichText';
 
 /** The live HTTPS origin preserves WKWebView microphone and document APIs. */
 export const BELMA_PAGE_URL = 'https://www.yapaymevzular.com/belmabelge';
@@ -144,6 +145,7 @@ export function buildAppBootstrapScript(): string {
   var tracks=new Set(), contexts=new Set(), blobs=new Map(), blobBytes=0;
   var suspended=false, epoch=0, serial=0, readySent=false, downloadBusy=false, trustedGestureAt=0;
   var poll=null, appPath=[], startedAt=Date.now(), observedRoot=null, rootObserver=null;
+  ${buildRichTextAdapterScript()}
   function host(){return document.querySelector(tag);}
   function send(value){if(window.ReactNativeWebView)window.ReactNativeWebView.postMessage(JSON.stringify(value));}
   function stopTracks(){tracks.forEach(function(t){try{t.stop();}catch(_){}});tracks.clear();}
@@ -218,6 +220,7 @@ export function buildAppBootstrapScript(): string {
     var local=root&&root.getElementById('belma-ios-shadow-style');
     if(root&&!local){local=document.createElement('style');local.id='belma-ios-shadow-style';local.textContent=shadowCSS;root.appendChild(local);}
     decorate(root,element);
+    belmaInstallRich(element,root);
     var controls=root&&root.querySelector('#card.belma-chat .bc-header')&&root.querySelector('#input')&&root.querySelector('#send');
     if(!readySent&&style.isConnected&&local&&local.isConnected&&isolated&&element.configured===true&&controls){
       readySent=true;send({type:'BELMA_APP_READY',version:1});if(poll)clearInterval(poll);

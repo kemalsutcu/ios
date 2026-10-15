@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Belma",
-    "description": "Belma — Yapay Zekâ Hukuk Asistanı",
+    "name": "belma - yapay mevzular hukuk asistanı",
+    "description": "belma - yapay mevzular hukuk asistanı",
     "slug": "belma-hukuk",
     "owner": "kemalsutcus-team",
     "version": "1.0.0",
