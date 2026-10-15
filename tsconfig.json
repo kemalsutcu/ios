@@ -6,5 +6,6 @@
       "react",
       "node"
     ]
-  }
+  },
+  "exclude": ["node_modules", "apps"]
 }

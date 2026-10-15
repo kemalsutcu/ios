@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Şahika",
+    "description": "Şahika — Yapay Zekâ Veteriner Asistanı",
+    "slug": "sahika-veteriner",
+    "owner": "kemalsutcus-team",
+    "version": "1.0.0",
+    "scheme": "sahika",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.pulsevet.sahika",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
+        "NSMicrophoneUsageDescription": "Şahika ile sesli görüşebilmeniz için mikrofon erişimi gerekir.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.pulsevet.sahika",
+      "permissions": [
+        "RECORD_AUDIO"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-sharing",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 170,
+          "backgroundColor": "#FFFFFF"
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "38c188d8-b89d-4141-bf15-092178e54c3d"
+      }
+    }
+  }
+}

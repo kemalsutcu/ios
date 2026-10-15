@@ -1,0 +1,42 @@
+{
+  "cli": {
+    "version": ">= 24.9.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true
+    },
+    "simulator": {
+      "distribution": "internal",
+      "environment": "preview",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "sahika-simulator": {
+      "extends": "simulator",
+      "ios": {
+        "image": "latest"
+      }
+    },
+    "sahika-preview": {
+      "extends": "preview",
+      "ios": {
+        "image": "latest"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
