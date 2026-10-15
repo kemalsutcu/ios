@@ -1,0 +1,28 @@
+build:
+  name: Capture real Şahika App Store screens
+  steps:
+    - eas/build
+    - eas/install_maestro:
+        inputs:
+          maestro_version: latest
+    - run:
+        name: Select App Store iPhone and collect simulator diagnostics
+        id: capture_device
+        outputs: [device_identifier]
+        command: |
+          CAPTURE_DEVICE_ID="$(node scripts/appstore-simulator.cjs)"
+          set-output device_identifier "$CAPTURE_DEVICE_ID"
+    - eas/start_ios_simulator:
+        inputs:
+          device_identifier: ${ steps.capture_device.device_identifier }
+    - run:
+        name: Install Şahika, capture its two modes, and record 20 seconds
+        command: node scripts/appstore-capture.cjs
+    - eas/upload_artifact:
+        name: Upload real App Store captures and diagnostics
+        if: ${ always() }
+        inputs:
+          type: build-artifact
+          path: |
+            artifacts/appstore
+            ${ eas.env.HOME }/.maestro/tests

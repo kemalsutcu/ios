@@ -33,6 +33,12 @@
         "image": "latest"
       }
     },
+    "sahika-appstore-capture": {
+      "extends": "sahika-simulator",
+      "config": "appstore-screenshots.yml",
+      "withoutCredentials": true,
+      "autoIncrement": false
+    },
     "sahika-preview": {
       "extends": "preview",
       "ios": {
