@@ -1,1 +1,67 @@
-{"avatarSource":"https://static.wixstatic.com/media/e870db_a6537c4dd682455ebc2a84bd49a15cdc~mv2.jpg","description":"Existing Belma avatar from the live Wix site; resized without generated alteration."}
+{
+  "assistant": "Belma",
+  "description": "Supplied original assets retained byte-for-byte. Derived interface assets are resized only, without generated alteration.",
+  "files": {
+    "belma-avatar.jpg": {
+      "uploadedName": "1e70f847-2d20-45a4-b1c3-1f18cbd1ccf6_edited(3).jpg",
+      "sha256": "20eb730c13f5d6b501c6eb08ecc7ccc29950e3f724cec8079f9da7c4e9454351",
+      "dimensions": [
+        1000,
+        1000
+      ],
+      "displayDerivativeDimensions": [
+        256,
+        256
+      ],
+      "samePortraitUrl": "https://static.wixstatic.com/media/e870db_a6537c4dd682455ebc2a84bd49a15cdc~mv2.jpg",
+      "urlVariantNote": "URL returns a separately encoded version of the same 1000 px portrait; the supplied upload is used without alteration."
+    },
+    "voice-button.png": {
+      "uploadedName": "Belma Sesli Gorusum Turkuaz Buton.png",
+      "sha256": "06ae2134e538dfc3d2ef650acad16ed6ea919a01a9a68979158a223d5e035631",
+      "dimensions": [
+        471,
+        400
+      ],
+      "displayDerivativeDimensions": [
+        192,
+        163
+      ]
+    },
+    "yapay-mevzular-light.png": {
+      "uploadedName": "Codex Image Sep 15, 2026, 07_34_21 AM(3).png",
+      "sha256": "11b84c411875f75d1a4f0e8f4d3112b9741cf6834f62e644d7ccc1ffc8a23acf",
+      "dimensions": [
+        1402,
+        1122
+      ],
+      "displayDerivativeDimensions": [
+        320,
+        256
+      ],
+      "sourceUrl": "https://static.wixstatic.com/media/e870db_4cc447f13be24be8b01fac343b6e2224~mv2.png"
+    },
+    "yapay-mevzular-dark.png": {
+      "uploadedName": "Codex Image Sep 15, 2026, 08_31_12 AM_edited(3).png",
+      "sha256": "efb2e36359dc6d46617c4cf90c09f513a47b9020ef8e278296ea515b66c34f62",
+      "dimensions": [
+        500,
+        340
+      ],
+      "displayDerivativeDimensions": [
+        240,
+        163
+      ]
+    }
+  },
+  "launchAssets": {
+    "sourceUrl": "https://static.wixstatic.com/media/e870db_a6537c4dd682455ebc2a84bd49a15cdc~mv2.jpg",
+    "description": "Previously verified icon, adaptive icon, native splash and favicon remain unchanged; they depict the same Belma portrait. The updated loading cover and assistant use the supplied original upload.",
+    "files": {
+      "icon.png": "6da4b4577409cea2134442e736b600cd1688cb3d938dc22e122058f679758d39",
+      "adaptive-icon.png": "6da4b4577409cea2134442e736b600cd1688cb3d938dc22e122058f679758d39",
+      "splash-icon.png": "4ceadb58c94640f4280acf6692ee8685788a93dea1b9430733ad7aa6689d0bfe",
+      "favicon.png": "617353ecd081fbf034e3604f7e06ea32f2b1224d29ecccdc1249adfb41e8419b"
+    }
+  }
+}

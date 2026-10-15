@@ -36,7 +36,7 @@ function fixture(capture: () => Promise<Stream> = async () => ({ getTracks: () =
     configured: false, phase: 'idle', sessionMode: '',
     endSession() { ++stopCount; return Promise.resolve(); },
     shadowRoot: {
-      querySelector: () => controls ? {} : null,
+      querySelector: (_selector: string): object | null => controls ? {} : null,
       querySelectorAll: () => [media],
       getElementById: (id: string) => shadowStyles.get(id),
       appendChild(style: { id: string; textContent: string; isConnected: boolean }) { style.isConnected = true; shadowStyles.set(style.id, style); },
@@ -75,7 +75,7 @@ function fixture(capture: () => Promise<Stream> = async () => ({ getTracks: () =
   const context = vm.createContext({ window, document, location: new URL(BELMA_PAGE_URL), navigator: { mediaDevices: devices },
     URL: BrowserURL, HTMLAnchorElement: Anchor, Set, Map, DOMException, Date, Uint8Array, Reflect,
     btoa: (value: string) => Buffer.from(value, 'binary').toString('base64'),
-    MutationObserver: class { constructor(callback: () => void) { observe = callback; } observe() {} },
+    MutationObserver: class { constructor(callback: () => void) { observe = callback; } observe() {} disconnect() {} },
     setInterval: () => 1, clearInterval() {},
   });
   vm.runInContext(buildAppBootstrapScript(), context);
@@ -89,6 +89,41 @@ function fixture(capture: () => Promise<Stream> = async () => ({ getTracks: () =
   };
 }
 const flush = () => new Promise<void>(resolve => setImmediate(resolve));
+
+test('bundled branding survives repeated hydration without duplicating or replacing working controls', () => {
+  const app = fixture();
+  class BrandNode {
+    className = ''; src = ''; alt = ''; decoding = ''; children: BrandNode[] = []; parent: BrandNode | null = null;
+    readonly classList = { add: (value: string) => { this.className += ' ' + value; } };
+    querySelector(selector: string): BrandNode | null {
+      const name = selector.slice(1);
+      return this.children.find(child => child.className.split(' ').includes(name)) ?? null;
+    }
+    append(child: BrandNode) { child.parent = this; this.children.push(child); }
+    prepend(child: BrandNode) { child.parent = this; this.children.unshift(child); }
+    replaceWith(child: BrandNode) { if (this.parent) { child.parent = this.parent; this.parent.children[this.parent.children.indexOf(this)] = child; } }
+  }
+  const brand = new BrandNode(), empty = new BrandNode(), menu = new BrandNode(), voice = new BrandNode();
+  const emblem = new BrandNode(); emblem.className = 'bc-emblem'; empty.append(emblem);
+  const existingVoiceChild = new BrandNode(); voice.append(existingVoiceChild);
+  const nodes: Record<string, BrandNode> = { '#card .bc-brand': brand, '#card .empty-state': empty, '#card .bc-menu-body': menu };
+  app.element.shadowRoot.querySelector = selector => nodes[selector] ?? {};
+  Object.assign(app.context.document, { createElement: () => new BrandNode() });
+  Object.assign(app.element, { chat: { voice } });
+  app.refresh(); app.refresh();
+  assert.equal(brand.children.length, 1);
+  assert.equal(empty.children.length, 2);
+  assert.equal(menu.children.length, 1);
+  assert.equal(voice.children.length, 2);
+  assert.equal(voice.children[1], existingVoiceChild, 'the original button children and handlers remain in place');
+  assert.ok(brand.children[0].src.startsWith('data:image/jpeg;base64,'));
+  assert.equal(brand.children[0].alt, 'Belma');
+  assert.equal(menu.children[0].children[0].alt, 'Yapay Mevzular');
+  assert.ok(voice.children[0].src.startsWith('data:image/png;base64,'));
+  // A new conversation recreates the empty state inside Shadow DOM after the ready poll has stopped.
+  nodes['#card .empty-state'] = new BrandNode(); app.observe();
+  assert.equal(nodes['#card .empty-state'].children.length, 2);
+});
 
 test('only exact HTTPS Belma paths may stay in the application', () => {
   assert.equal(isBelmaPageUrl(BELMA_PAGE_URL), true);
