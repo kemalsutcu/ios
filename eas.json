@@ -22,11 +22,11 @@
       "autoIncrement": true
     },
     "simulator": {
-      "developmentClient": true,
       "distribution": "internal",
       "ios": {
         "simulator": true
-      }
+      },
+      "environment": "preview"
     }
   },
   "submit": {

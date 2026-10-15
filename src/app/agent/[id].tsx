@@ -4,11 +4,15 @@ import { useEffect, useState } from 'react';
 import { Alert, BackHandler, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AgentWebView } from '../../components/AgentWebView';
+import { NativeSahika } from '../../components/NativeSahika';
 import { agents } from '../../data/agents';
 import { colors } from '../../theme';
 
 export default function AgentScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  if (id === 'sahika') {
+    return <NativeSahika fallback={<AgentSession key={id} id={id} />} />;
+  }
   return <AgentSession key={id} id={id} />;
 }
 

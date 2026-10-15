@@ -17,7 +17,7 @@ Kurulum yeni bir Expo projesi, Apple sertifikası veya bulut buildi kendiliğind
 | Seçim | İşlem |
 |---|---|
 | 1 | Bağımlılıkları kurar, kontrolleri yapar, mevcut proje UUID bağlantısını kurar. |
-| 2 | Expo Go için QR kodlu yerel geliştirme sunucusunu açar. |
+| 2 | Kurulmuş development client için QR kodlu yerel geliştirme sunucusunu açar. |
 | 3 | Apple sertifika ve provisioning profile yönetimini açar. |
 | 4 | Kayıtlı fiziksel iPhone için `preview` bulut buildini başlatır. |
 | 5 | TestFlight/App Store için `production` bulut buildini başlatır. |
@@ -29,18 +29,20 @@ Kurulum yeni bir Expo projesi, Apple sertifikası veya bulut buildi kendiliğind
 
 ## iPhone'da açma
 
-**Expo Go:** iPhone'a Expo Go kurun; telefon ve Windows bilgisayar aynı Wi-Fi'da olsun. Menü **2** ile açılan QR kodunu iPhone Kamerasıyla okutun. Windows güvenlik duvarı sorarsa özel ağ erişimine izin verin. iPhone'un kullandığı Expo Go sürümü projenin SDK'sını desteklemiyorsa aşağıdaki development/preview yolu gerekir.
+**Development client:** Native Şahika, ElevenLabs/LiveKit modülleri içerdiği için Expo Go ile çalışmaz. Önce aşağıdaki komutla development build oluşturun ve EAS kurulum bağlantısından iPhone'a yükleyin. Sonra menü **2** ile sunucuyu açıp QR kodunu development client ile kullanın. Telefon ve bilgisayar aynı Wi-Fi'da olsun; Windows güvenlik duvarı sorarsa özel ağ erişimine izin verin. `npm start` ve PowerShell `-Action Start` artık varsayılan olarak `--dev-client` kullanır.
 
 **Preview:** Menü **7** ile cihaz kaydını tamamlayın, ardından **4** çalıştırın. Build sonunda EAS'nin kurulum bağlantısını kayıtlı iPhone'da açın. Sonradan yeni cihaz eklenirse o cihazın provisioning profile'a alınması için yeni build veya EAS re-sign işlemi gerekir. Preview, Expo Go ve açık bir Metro sunucusu gerektirmeyen test paketidir.
 
-**Development client:** Özel native özelliklerin geliştirme sürümü için:
+Development build oluşturmak ve kurulumdan sonra sunucuyu açmak için:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\windows\Yapay-Mevzular.ps1" -Action Development
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\windows\Yapay-Mevzular.ps1" -Action Start -DevelopmentClient
 ```
 
-**Simulator:** `-Action Simulator` bulutta simulator paketi oluşturur. Apple'ın yerel iOS Simulator uygulaması macOS/Xcode gerektirir; bu paket Windows'ta veya fiziksel iPhone'da çalışmaz.
+`-DevelopmentClient` eski kısayollarla uyumluluk için kabul edilir; Start artık bu parametre olmadan da aynı modu kullanır.
+
+**Simulator:** `-Action Simulator` veya `npm run build:simulator` bulutta bağımsız simulator paketi oluşturur; Metro sunucusu gerektirmez. Apple'ın yerel iOS Simulator uygulaması macOS/Xcode gerektirir; bu paket Windows'ta veya fiziksel iPhone'da çalışmaz.
 
 ## Token ve dosya yolları
 

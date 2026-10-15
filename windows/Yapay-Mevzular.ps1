@@ -216,10 +216,10 @@ function Invoke-Action {
         'Start' {
             Assert-Identity
             $expoPath = Get-LocalTool 'expo'
-            $clientFlag = '--go'
-            if ($DevelopmentClient) { $clientFlag = '--dev-client' }
-            Write-Host 'Telefon ve bilgisayar ayni Wi-Fi aginda olsun. QR kodunu iPhone Kamerasi ile acin. Durdurmak icin Ctrl+C.'
-            Invoke-Native -Command $expoPath -Arguments @('start', '--lan', $clientFlag) -Label 'Expo'
+            # -DevelopmentClient remains accepted for existing shortcuts; native
+            # Sahika now requires a development client for every Start action.
+            Write-Host 'Once development buildi iPhonea kurun. Telefon ve bilgisayar ayni Wi-Fi aginda olsun. QR kodunu development client ile acin. Durdurmak icin Ctrl+C.'
+            Invoke-Native -Command $expoPath -Arguments @('start', '--lan', '--dev-client') -Label 'Expo'
         }
         'Apple' { Assert-Linked; Invoke-Eas -Arguments @('credentials', '--platform', 'ios') }
         'Device' { Assert-Linked; Invoke-Eas -Arguments @('device:create') }
@@ -248,7 +248,7 @@ try {
         Write-Host ''
         Write-Host 'YAPAY MEVZULAR - iPHONE / EXPO'
         Write-Host '1  Kurulum ve mevcut Expo projesini baglama'
-        Write-Host '2  Expo Go onizlemesini baslat (QR)'
+        Write-Host '2  Development client sunucusunu baslat (QR)'
         Write-Host '3  Apple sertifika / provisioning ayarlari'
         Write-Host '4  Preview iOS build (kayitli iPhone)'
         Write-Host '5  Production iOS build (TestFlight icin)'
