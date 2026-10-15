@@ -1,0 +1,24 @@
+name: Şahika full-screen iPhone layout
+
+jobs:
+  iphone_package:
+    name: Signed iPhone installation package
+    type: build
+    params:
+      platform: ios
+      profile: sahika-preview
+  simulator:
+    name: Compile iPhone simulator
+    type: build
+    params:
+      platform: ios
+      profile: sahika-simulator
+  layout_screens:
+    name: Capture voice, chat and keyboard layouts
+    needs: [simulator]
+    type: maestro
+    environment: preview
+    image: latest
+    params:
+      build_id: ${{ needs.simulator.outputs.build_id }}
+      flow_path: .maestro/fullscreen.yml

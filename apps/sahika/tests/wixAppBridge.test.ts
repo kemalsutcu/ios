@@ -17,63 +17,130 @@ type DomEvent = { target?: unknown; detail?: unknown; isTrusted?: boolean; compo
 class PageElement {
   readonly attributes = new Map<string, string>();
   readonly children: PageElement[] = [];
+  readonly properties = new Map<string, string>();
+  readonly style = {
+    setProperty: (name: string, value: string) => this.properties.set(name, value),
+    getPropertyValue: (name: string) => this.properties.get(name) ?? '',
+  };
   parentElement: PageElement | null = null;
+  id = '';
+  className = '';
+  textContent = '';
+  src = '';
+  alt = '';
+  hidden = false;
 
   constructor(readonly tagName: string, parent?: PageElement) {
     if (parent) this.attach(parent);
   }
+  get isConnected(): boolean {
+    return ['HTML', 'HEAD', 'BODY'].includes(this.tagName) || !!this.parentElement?.isConnected;
+  }
   attach(parent: PageElement) {
-    if (this.parentElement) this.parentElement.children.splice(this.parentElement.children.indexOf(this), 1);
+    const previous = this.parentElement;
+    if (previous) {
+      const index = previous.children.indexOf(this);
+      if (index !== -1) previous.children.splice(index, 1);
+    }
     this.parentElement = parent;
     parent.children.push(this);
+  }
+  append(...nodes: PageElement[]) { nodes.forEach(node => node.attach(this)); }
+  appendChild(node: PageElement) { this.append(node); return node; }
+  prepend(...nodes: PageElement[]) {
+    nodes.forEach(node => node.attach(this));
+    this.children.splice(0, 0, ...this.children.splice(this.children.length - nodes.length, nodes.length));
+  }
+  replaceChildren(...nodes: PageElement[]) {
+    this.children.forEach(node => { node.parentElement = null; });
+    this.children.splice(0);
+    this.append(...nodes);
+  }
+  getElementById(id: string): PageElement | null {
+    for (const child of this.children) {
+      if (child.id === id) return child;
+      const result = child.getElementById(id);
+      if (result) return result;
+    }
+    return null;
   }
   hasAttribute(name: string) { return this.attributes.has(name); }
   setAttribute(name: string, value: string) { this.attributes.set(name, value); }
   removeAttribute(name: string) { this.attributes.delete(name); }
+  toggleAttribute(name: string, force?: boolean) {
+    const enabled = force ?? !this.hasAttribute(name);
+    if (enabled) this.setAttribute(name, ''); else this.removeAttribute(name);
+    return enabled;
+  }
 }
 
-function fixture(getUserMedia: () => Promise<{ getTracks: () => Track[] }> = async () => ({ getTracks: () => [] }), downloadBlob?: Blob) {
+function fixture(getUserMedia: () => Promise<{ getTracks: () => Track[] }> = async () => ({ getTracks: () => [] }), downloadBlob?: Blob,
+  insets = { top: 0, right: 0, bottom: 0, left: 0 }) {
   const messages: string[] = [];
   const stoppedKeys: string[] = [];
   const listeners = new Map<string, ((event: DomEvent) => void)[]>();
-  const styles = new Map<string, { id: string; textContent: string; isConnected: boolean }>();
+  const windowListeners = new Map<string, (() => void)[]>();
+  const viewportListeners = new Map<string, (() => void)[]>();
+  const styles = new Map<string, PageElement>();
   let configured = false;
   let readyAttribute = true;
   let controls = false;
   const body = new PageElement('BODY');
+  const head = new PageElement('HEAD');
+  const html = new PageElement('HTML');
   const site = new PageElement('DIV', body);
   const page = new PageElement('MAIN', site);
   const section = new PageElement('SECTION', page);
   const wrapper = new PageElement('DIV', section);
   const node = new PageElement('PULSEVET-SAHIKA-NEW', wrapper);
-  let observeMutations: (() => void) | null = null;
+  const shadow = new PageElement('SHADOW', node);
+  const frame = new PageElement('SECTION', shadow); frame.className = 'frame vf-root';
+  const control = new PageElement('BUTTON', frame); control.className = 'vf-main';
+  const boot = new PageElement('DIV', shadow); boot.className = 'boot-shell';
+  const observed = new Map<PageElement, Set<() => void>>();
   let hostNode: typeof element | null;
   const media = { pauses: 0, pause() { ++this.pauses; } };
   const element = Object.assign(node, {
     hasAttribute: (name: string) => name === 'data-sahika-ready' ? readyAttribute && configured : name === 'data-sahika-loading' ? !configured : node.attributes.has(name),
     setAttribute: (name: string, value: string) => { node.attributes.set(name, value); if (name === 'force-stop-key') stoppedKeys.push(value); },
-    shadowRoot: {
-      querySelector: (selector: string) => selector === '.boot-shell' ? { hidden: configured } : controls ? {} : null,
+    shadowRoot: Object.assign(shadow, {
+      querySelector: (selector: string) => selector === '.boot-shell' ? { hidden: configured }
+        : selector === '.vf-root,section.frame' ? shadow.children.find(child => child.className.includes('vf-root')) ?? null
+        : controls ? control : null,
       querySelectorAll: () => [media],
-    },
+    }),
   });
   hostNode = element;
+  const appendHead = head.appendChild.bind(head);
+  head.appendChild = (style: PageElement) => { styles.set(style.id, style); return appendHead(style); };
   const document = {
-    documentElement: { setAttribute() {} },
+    documentElement: html,
     body,
-    head: { appendChild(style: { id: string; textContent: string; isConnected: boolean }) { style.isConnected = true; styles.set(style.id, style); } },
+    head,
     querySelector: (selector: string) => selector === 'pulsevet-sahika-new' ? hostNode : null,
     querySelectorAll: () => [media],
     getElementById: (id: string) => styles.get(id),
-    createElement: () => ({ id: '', textContent: '', isConnected: false }),
+    createElement: (tag: string) => new PageElement(tag.toUpperCase()),
     addEventListener(name: string, callback: (event: DomEvent) => void) {
       listeners.set(name, [...(listeners.get(name) ?? []), callback]);
     },
   };
+  const visualViewport = {
+    height: 844,
+    addEventListener(name: string, callback: () => void) {
+      viewportListeners.set(name, [...(viewportListeners.get(name) ?? []), callback]);
+    },
+  };
   const window = {
     top: undefined as unknown,
+    innerHeight: 844,
+    scrollX: 0, scrollY: 0,
+    scrollTo(x: number, y: number) { this.scrollX = x; this.scrollY = y; },
+    visualViewport,
     ReactNativeWebView: { postMessage(value: string) { messages.push(value); } },
-    addEventListener() {},
+    addEventListener(name: string, callback: () => void) {
+      windowListeners.set(name, [...(windowListeners.get(name) ?? []), callback]);
+    },
   };
   window.top = window;
   const devices = { getUserMedia };
@@ -82,19 +149,36 @@ function fixture(getUserMedia: () => Promise<{ getTracks: () => Track[] }> = asy
     URL, Set, DOMException, Date, TextDecoder,
     fetch: async () => ({ blob: async () => downloadBlob }),
     MutationObserver: class {
+      private target: PageElement | null = null;
       constructor(private readonly callback: () => void) {}
-      observe() { observeMutations = this.callback; }
-      disconnect() { observeMutations = null; }
+      observe(target: PageElement) {
+        this.disconnect(); this.target = target;
+        const callbacks = observed.get(target) ?? new Set<() => void>();
+        callbacks.add(this.callback); observed.set(target, callbacks);
+      }
+      disconnect() { if (this.target) observed.get(this.target)?.delete(this.callback); this.target = null; }
     },
     setInterval: () => 1, clearInterval() {},
   });
-  vm.runInContext(buildAppBootstrapScript(), context);
+  vm.runInContext(buildAppBootstrapScript(insets), context);
   const run = (reason: 'active' | 'inactive' | 'background' | 'unmount') => vm.runInContext(buildAppTransitionScript(reason), context);
   const refresh = () => vm.runInContext('window.__SAHIKA_IOS_BRIDGE_V1.refresh()', context);
-  return { messages, stoppedKeys, devices, media, context, run, refresh, styles,
+  const notify = (target: PageElement) => [...(observed.get(target) ?? [])].forEach(callback => callback());
+  return { messages, stoppedKeys, devices, media, context, run, refresh, styles, window, visualViewport,
     configure() { configured = true; }, configureLegacy() { configured = true; readyAttribute = false; }, addControls() { controls = true; }, listeners,
-    body, site, page, section, wrapper, element,
-    notifyMutation() { observeMutations?.(); },
+    body, site, page, section, wrapper, element, shadow, frame,
+    notifyMutation() { notify(html); },
+    notifyShadowMutation() { notify(shadow); },
+    resize(height: number, visualHeight = height) {
+      window.innerHeight = height; visualViewport.height = visualHeight;
+      for (const callback of windowListeners.get('resize') ?? []) callback();
+      for (const callback of viewportListeners.get('resize') ?? []) callback();
+    },
+    scrollViewport() { for (const callback of viewportListeners.get('scroll') ?? []) callback(); },
+    rebuildShadow() {
+      const replacement = new PageElement('SECTION'); replacement.className = 'frame vf-root';
+      shadow.replaceChildren(replacement); notify(shadow); return replacement;
+    },
     setHostAvailable(available: boolean) { hostNode = available ? element : null; },
   };
 }
@@ -193,6 +277,88 @@ test('ready never reveals a detached assistant before its application path reach
   app.element.attach(app.wrapper);
   app.notifyMutation();
   assert.equal(app.messages.length, 1);
+});
+
+test('one shared assistant canvas injects identity and partner logos exactly once', () => {
+  const app = fixture();
+  const identity = app.shadow.getElementById('sahika-app-identity');
+  const partners = app.shadow.getElementById('sahika-app-partners');
+  assert.ok(identity, 'identity must belong to the same assistant shadow document');
+  assert.ok(partners, 'the partner footer must belong to the same assistant shadow document');
+  assert.equal(app.messages.length, 0, 'branding alone must not expose an unconfigured assistant');
+  assert.equal(identity.children[0].children[0].textContent, 'Şahika');
+  assert.equal(identity.children[2].alt, 'Şahika’nın avatarı');
+  assert.match(identity.children[2].src, /^data:image\//u);
+  assert.equal(partners.children[0].alt, 'PulseVet');
+  assert.equal(partners.children[1].textContent, '×');
+  assert.equal(partners.children[2].alt, 'Yapay Mevzular');
+  assert.equal(app.shadow.children[0], identity);
+  assert.equal(app.shadow.children.at(-1), partners);
+
+  app.configure(); app.addControls();
+  app.refresh(); app.refresh(); app.notifyShadowMutation();
+  assert.equal(app.shadow.children.filter(child => child.id === identity.id).length, 1);
+  assert.equal(app.shadow.children.filter(child => child.id === partners.id).length, 1);
+  assert.equal(app.shadow.getElementById(identity.id), identity, 'updates must preserve the same identity node');
+  assert.equal(app.shadow.getElementById(partners.id), partners, 'updates must preserve the same footer node');
+  assert.equal(app.element.parentElement, app.wrapper, 'layout must never detach the live custom element');
+  assert.equal(app.frame.parentElement, app.shadow, 'layout must never reparent the source-owned assistant frame');
+  assert.equal(app.messages.length, 1);
+});
+
+test('source shadow rebuild reinstalls branding while the live host remains connected', () => {
+  const app = fixture(); app.configure(); app.addControls(); app.refresh();
+  const oldIdentity = app.shadow.getElementById('sahika-app-identity');
+  const oldPartners = app.shadow.getElementById('sahika-app-partners');
+  const replacementFrame = app.rebuildShadow();
+  const identity = app.shadow.getElementById('sahika-app-identity');
+  const partners = app.shadow.getElementById('sahika-app-partners');
+  assert.ok(identity && partners);
+  assert.notEqual(identity, oldIdentity);
+  assert.notEqual(partners, oldPartners);
+  assert.equal(oldIdentity?.isConnected, false);
+  assert.equal(oldPartners?.isConnected, false);
+  assert.ok(app.shadow.getElementById('sahika-app-layout-style'), 'rebuilds must restore the height and overflow stylesheet');
+  assert.equal(app.shadow.children[0], identity);
+  assert.equal(app.shadow.children.at(-1), partners);
+  assert.equal(replacementFrame.parentElement, app.shadow);
+  assert.equal(app.element.parentElement, app.wrapper);
+  assert.equal(app.element.isConnected, true);
+  assert.equal(app.messages.length, 1, 'rebuilding presentation must not restart or reannounce the assistant');
+});
+
+test('keyboard and small viewport changes fit the visible height and restore safe insets', () => {
+  const app = fixture(undefined, undefined, { top: 59, right: 3, bottom: 34, left: 3 });
+  assert.equal(app.element.style.getPropertyValue('--sahika-app-height'), '844px');
+  assert.equal(app.element.style.getPropertyValue('--sahika-safe-top'), '59px');
+  assert.equal(app.element.style.getPropertyValue('--sahika-safe-bottom'), '34px');
+  assert.equal(app.element.hasAttribute('data-sahika-app-short'), false);
+  app.resize(844, 320); // iOS keyboard changes the visual viewport before the layout viewport.
+  assert.equal(app.element.style.getPropertyValue('--sahika-app-height'), '320px');
+  assert.equal(app.element.hasAttribute('data-sahika-app-short'), true);
+  assert.equal(app.element.hasAttribute('data-sahika-app-compact'), true);
+  assert.equal(app.element.style.getPropertyValue('--sahika-safe-bottom'), '0px', 'keyboard already occupies the bottom inset');
+  assert.equal(app.element.style.getPropertyValue('--sahika-safe-top'), '59px');
+  app.window.scrollY = 72; app.scrollViewport();
+  assert.equal(app.window.scrollY, 0, 'focus panning must not leave the outer page scrolled');
+
+  app.resize(667);
+  assert.equal(app.element.style.getPropertyValue('--sahika-app-height'), '667px');
+  assert.equal(app.element.hasAttribute('data-sahika-app-short'), false);
+  assert.equal(app.element.hasAttribute('data-sahika-app-compact'), true);
+  assert.equal(app.element.style.getPropertyValue('--sahika-safe-bottom'), '34px');
+  app.resize(844);
+  assert.equal(app.element.hasAttribute('data-sahika-app-compact'), false);
+});
+
+test('native safe-area changes update the existing layout without duplicate branding', () => {
+  const app = fixture();
+  const identity = app.shadow.getElementById('sahika-app-identity');
+  vm.runInContext(buildAppBootstrapScript({ top: 47, right: 0, bottom: 21, left: 0 }), app.context);
+  assert.equal(app.element.style.getPropertyValue('--sahika-safe-top'), '47px');
+  assert.equal(app.element.style.getPropertyValue('--sahika-safe-bottom'), '21px');
+  assert.equal(app.shadow.getElementById('sahika-app-identity'), identity);
+  assert.equal(app.shadow.children.filter(child => child.id === 'sahika-app-partners').length, 1);
 });
 
 test('text downloads preserve UTF-8 and reject paths, size mismatches and active formats', () => {

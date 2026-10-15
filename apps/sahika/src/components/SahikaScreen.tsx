@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, AppState, Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
-import SahikaIdentity from './SahikaIdentity';
 import {
   buildAppBootstrapScript,
   buildAppTransitionScript,
@@ -14,17 +13,17 @@ import {
   SAHIKA_PAGE_URL,
 } from '../lib/wixAppBridge';
 
-const BOOTSTRAP = buildAppBootstrapScript();
 const LOAD_TIMEOUT_MS = 60_000;
 
 /** The original PulseVet page owns Şahika's interface, assets, CMS configuration and voice engine. */
 export default function SahikaScreen() {
+  const insets = useSafeAreaInsets();
+  const bootstrap = useMemo(() => buildAppBootstrapScript(insets), [insets]);
   const webView = useRef<WebView>(null);
   const mounted = useRef(true);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [generation, setGeneration] = useState(0);
   const [ready, setReady] = useState(false);
-  const [identityReady, setIdentityReady] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const externalBusy = useRef(false);
   const lastExternal = useRef({ url: '', time: 0 });
@@ -61,6 +60,8 @@ export default function SahikaScreen() {
     timeout.current = setTimeout(() => fail('Şahika şu anda yüklenemedi. İnternet bağlantını kontrol edip yeniden dene.'), LOAD_TIMEOUT_MS);
     return () => clearTimeout(timeout.current);
   }, [generation, fail]);
+
+  useEffect(() => { webView.current?.injectJavaScript(bootstrap); }, [bootstrap]);
 
   const openExternal = useCallback(async (value: string) => {
     const url = externalDestination(value);
@@ -110,11 +111,9 @@ export default function SahikaScreen() {
     stopCapture();
     setReady(false); setFailure(null); setGeneration(value => value + 1);
   };
-  const identityDidLoad = useCallback(() => setIdentityReady(true), []);
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom', 'left', 'right']}>
-      <SahikaIdentity onReady={identityDidLoad} />
+    <View style={styles.screen}>
       <View style={styles.conversation}>
       {!failure ? <WebView
         key={generation}
@@ -142,9 +141,9 @@ export default function SahikaScreen() {
         }}
         onContentProcessDidTerminate={() => fail('Görüşme ekranı kapandı. Şahika’yı yeniden açabilirsin.')}
         onRenderProcessGone={() => fail('Görüşme ekranı kapandı. Şahika’yı yeniden açabilirsin.')}
-        injectedJavaScriptBeforeContentLoaded={BOOTSTRAP}
+        injectedJavaScriptBeforeContentLoaded={bootstrap}
         injectedJavaScriptBeforeContentLoadedForMainFrameOnly
-        injectedJavaScript={BOOTSTRAP}
+        injectedJavaScript={bootstrap}
         injectedJavaScriptForMainFrameOnly
         mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         allowsInlineMediaPlayback
@@ -158,10 +157,14 @@ export default function SahikaScreen() {
         allowUniversalAccessFromFileURLs={false}
         webviewDebuggingEnabled={false}
         contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
         allowsBackForwardNavigationGestures={false}
         bounces={false}
+        scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       /> : null}
-      {!ready || !identityReady || failure ? <View style={styles.cover} accessibilityLiveRegion="polite">
+      {!ready || failure ? <View style={styles.cover} accessibilityLiveRegion="polite">
         <View style={styles.coverContent}>
           {failure ? <>
             <Text style={styles.message}>{failure}</Text>
@@ -181,7 +184,7 @@ export default function SahikaScreen() {
         />
       </View> : null}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

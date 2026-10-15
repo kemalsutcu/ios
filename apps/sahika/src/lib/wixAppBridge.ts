@@ -1,3 +1,7 @@
+import branding from '../../assets/app-branding.json';
+import { APP_SHADOW_CSS, type AppInsets, ZERO_INSETS } from './appLayout';
+import { APP_LAYOUT_RUNTIME_SOURCE } from './appLayoutRuntime.generated';
+
 /** The signed app loads the live Wix assistant over HTTPS so microphone capture stays secure. */
 export const SAHIKA_PAGE_URL = 'https://www.pulseveteriner.com/sahika';
 export const SAHIKA_ELEMENT_TAG = 'pulsevet-sahika-new';
@@ -78,9 +82,9 @@ html[data-sahika-ios-app] [data-sahika-app-path]:not(${SAHIKA_ELEMENT_TAG}) > :n
 html[data-sahika-ios-app] [data-sahika-app-path] {
   display:block!important;position:static!important;inset:auto!important;
   width:100%!important;min-width:0!important;max-width:none!important;
-  height:auto!important;min-height:0!important;max-height:none!important;
+  height:100%!important;min-height:0!important;max-height:100%!important;
   margin:0!important;padding:0!important;border:0!important;
-  box-sizing:border-box!important;overflow:visible!important;
+  box-sizing:border-box!important;overflow:hidden!important;
   grid-area:auto!important;align-self:auto!important;justify-self:auto!important;
   transform:none!important;translate:none!important;scale:none!important;rotate:none!important;
   background:transparent!important;box-shadow:none!important;
@@ -91,23 +95,29 @@ html[data-sahika-ios-app] [data-sahika-app-path]::before,
 html[data-sahika-ios-app] [data-sahika-app-path]::after { display:none!important; }
 html[data-sahika-ios-app],
 html[data-sahika-ios-app] body[data-sahika-app-path] {
-  min-height:100%!important;overflow-x:hidden!important;-webkit-text-size-adjust:100%;
+  width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;overscroll-behavior:none!important;-webkit-text-size-adjust:100%;
 }
-html[data-sahika-ios-app] ${SAHIKA_ELEMENT_TAG}[data-sahika-app-path] {
-  min-height:100vh!important;min-height:100dvh!important;
+html[data-sahika-ios-app] body { background:#f3f3f3!important; }
+html[data-sahika-ios-app] [data-pv-sahika-backdrop] { position:fixed!important;inset:0!important; }
+@font-face { font-family:SahikaAppTitle;src:url("${branding.titleFont}") format('truetype');font-display:swap; }
+html[data-sahika-ios-app] ${SAHIKA_ELEMENT_TAG}[data-sahika-app-layout] {
+  display:flex!important;height:var(--sahika-app-height,100dvh)!important;min-height:0!important;
 }
 `;
 
 /** Runs in the main HTTPS document before Wix starts, and again idempotently after load. */
-export function buildAppBootstrapScript(): string {
+export function buildAppBootstrapScript(insets: AppInsets = ZERO_INSETS): string {
   return String.raw`
 (function () {
   if (window.top !== window || location.protocol !== 'https:' ||
       !['www.pulseveteriner.com','pulseveteriner.com'].includes(location.hostname) ||
       !['/sahika','/sahika/'].includes(location.pathname)) return;
-  if (window.__SAHIKA_IOS_BRIDGE_V1) { window.__SAHIKA_IOS_BRIDGE_V1.refresh(); return; }
+  if (window.__SAHIKA_IOS_BRIDGE_V1) { window.__SAHIKA_IOS_BRIDGE_V1.updateInsets(${JSON.stringify(insets)}); window.__SAHIKA_IOS_BRIDGE_V1.refresh(); return; }
   var tag = ${JSON.stringify(SAHIKA_ELEMENT_TAG)};
   var css = ${JSON.stringify(APP_PAGE_CSS)};
+  var layout = (${APP_LAYOUT_RUNTIME_SOURCE})();
+  var layoutOptions = ${JSON.stringify({css:APP_SHADOW_CSS, avatar:branding.avatar, pulsevet:branding.pulsevet, yapayMevzular:branding.yapayMevzular, insets})};
   var tracks = new Set();
   var suspended = false;
   var captureEpoch = 0;
@@ -198,6 +208,7 @@ export function buildAppBootstrapScript(): string {
     var element = host();
     var isolated = isolateAssistant(element);
     var root = element && element.shadowRoot;
+    var layoutReady = element && layout.install(element, layoutOptions);
     // ui-ready fires before loadConfig. Wait for the real configured assistant controls.
     var controls = root && root.querySelector('button.vf-main,button.main,button.vf-start');
     var region = root && root.querySelector('.vf-root,section.frame');
@@ -205,7 +216,7 @@ export function buildAppBootstrapScript(): string {
     // Both deployed 65.2 and uploaded 65.3 publish ui-visible only after config/bridge setup.
     var configured = element && (element.hasAttribute('data-sahika-ready') ||
       (boot && boot.hidden && !element.hasAttribute('data-sahika-loading')));
-    if (!readySent && style.isConnected && isolated && configured && controls && region) {
+    if (!readySent && style.isConnected && isolated && layoutReady && configured && controls && region) {
       readySent = true;
       send({type:'SAHIKA_APP_READY',version:1});
       if (poll) clearInterval(poll);
@@ -218,6 +229,7 @@ export function buildAppBootstrapScript(): string {
       lastState = event.detail && {status:event.detail.status,mode:event.detail.mode};
     }
   });
+  document.addEventListener('ui-ready', refresh);
   ['pointerdown','keydown','click'].forEach(function (name) {
     document.addEventListener(name, function (event) { if (event.isTrusted) trustedGestureAt = Date.now(); }, true);
   });
@@ -257,7 +269,7 @@ export function buildAppBootstrapScript(): string {
     send({type:'SAHIKA_APP_EXTERNAL',version:1,url:url.href});
   }, true);
   window.addEventListener('pagehide', function () { transition('background'); });
-  window.__SAHIKA_IOS_BRIDGE_V1 = { refresh:refresh, transition:transition };
+  window.__SAHIKA_IOS_BRIDGE_V1 = { refresh:refresh, transition:transition, updateInsets:function(insets){layoutOptions.insets=insets;layout.viewport();} };
   if (typeof MutationObserver === 'function' && document.documentElement) {
     // Wix can hydrate mobile headers, pinned menus or a replacement page after READY.
     // Shadow-root conversation updates are outside this lightweight document observer.

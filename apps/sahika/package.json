@@ -7,6 +7,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "generate:branding": "node scripts/generate-brand-assets.mjs",
     "start": "expo start",
     "ios": "expo start --ios",
     "android": "expo start --android",
@@ -15,7 +16,7 @@
     "lint": "eslint .",
     "test": "node --import tsx --test tests/*.test.ts",
     "doctor": "expo-doctor",
-    "export:ios": "expo export --platform ios",
+    "export:ios": "npm run generate:branding && expo export --platform ios",
     "build:preview": "npx --yes eas-cli@24.9.0 build --platform ios --profile preview",
     "build:production": "npx --yes eas-cli@24.9.0 build --platform ios --profile production",
     "build:simulator": "npx --yes eas-cli@24.9.0 build --platform ios --profile simulator"
