@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "version": ">= 24.9.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true
+    },
+    "simulator": {
+      "distribution": "internal",
+      "environment": "preview",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "belma-simulator": {
+      "extends": "simulator",
+      "ios": {
+        "image": "latest"
+      }
+    },
+    "belma-preview": {
+      "extends": "preview",
+      "ios": {
+        "image": "latest"
+      }
+    }
+  }
+}
