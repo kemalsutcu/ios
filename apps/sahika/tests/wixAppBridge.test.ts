@@ -14,6 +14,24 @@ import {
 type Track = { readyState: string; stop: () => void; addEventListener: () => void };
 type DomEvent = { target?: unknown; detail?: unknown; isTrusted?: boolean; composedPath?: () => unknown[]; preventDefault?: () => void; stopImmediatePropagation?: () => void };
 
+class PageElement {
+  readonly attributes = new Map<string, string>();
+  readonly children: PageElement[] = [];
+  parentElement: PageElement | null = null;
+
+  constructor(readonly tagName: string, parent?: PageElement) {
+    if (parent) this.attach(parent);
+  }
+  attach(parent: PageElement) {
+    if (this.parentElement) this.parentElement.children.splice(this.parentElement.children.indexOf(this), 1);
+    this.parentElement = parent;
+    parent.children.push(this);
+  }
+  hasAttribute(name: string) { return this.attributes.has(name); }
+  setAttribute(name: string, value: string) { this.attributes.set(name, value); }
+  removeAttribute(name: string) { this.attributes.delete(name); }
+}
+
 function fixture(getUserMedia: () => Promise<{ getTracks: () => Track[] }> = async () => ({ getTracks: () => [] }), downloadBlob?: Blob) {
   const messages: string[] = [];
   const stoppedKeys: string[] = [];
@@ -22,20 +40,29 @@ function fixture(getUserMedia: () => Promise<{ getTracks: () => Track[] }> = asy
   let configured = false;
   let readyAttribute = true;
   let controls = false;
+  const body = new PageElement('BODY');
+  const site = new PageElement('DIV', body);
+  const page = new PageElement('MAIN', site);
+  const section = new PageElement('SECTION', page);
+  const wrapper = new PageElement('DIV', section);
+  const node = new PageElement('PULSEVET-SAHIKA-NEW', wrapper);
+  let observeMutations: (() => void) | null = null;
+  let hostNode: typeof element | null;
   const media = { pauses: 0, pause() { ++this.pauses; } };
-  const element = {
-    tagName: 'PULSEVET-SAHIKA-NEW',
-    hasAttribute: (name: string) => name === 'data-sahika-ready' ? readyAttribute && configured : name === 'data-sahika-loading' ? !configured : false,
-    setAttribute: (name: string, value: string) => { if (name === 'force-stop-key') stoppedKeys.push(value); },
+  const element = Object.assign(node, {
+    hasAttribute: (name: string) => name === 'data-sahika-ready' ? readyAttribute && configured : name === 'data-sahika-loading' ? !configured : node.attributes.has(name),
+    setAttribute: (name: string, value: string) => { node.attributes.set(name, value); if (name === 'force-stop-key') stoppedKeys.push(value); },
     shadowRoot: {
       querySelector: (selector: string) => selector === '.boot-shell' ? { hidden: configured } : controls ? {} : null,
       querySelectorAll: () => [media],
     },
-  };
+  });
+  hostNode = element;
   const document = {
     documentElement: { setAttribute() {} },
+    body,
     head: { appendChild(style: { id: string; textContent: string; isConnected: boolean }) { style.isConnected = true; styles.set(style.id, style); } },
-    querySelector: (selector: string) => selector === 'pulsevet-sahika-new' ? element : null,
+    querySelector: (selector: string) => selector === 'pulsevet-sahika-new' ? hostNode : null,
     querySelectorAll: () => [media],
     getElementById: (id: string) => styles.get(id),
     createElement: () => ({ id: '', textContent: '', isConnected: false }),
@@ -54,14 +81,22 @@ function fixture(getUserMedia: () => Promise<{ getTracks: () => Track[] }> = asy
     window, document, location: new URL(SAHIKA_PAGE_URL), navigator: { mediaDevices: devices },
     URL, Set, DOMException, Date, TextDecoder,
     fetch: async () => ({ blob: async () => downloadBlob }),
-    MutationObserver: class { observe() {} disconnect() {} },
+    MutationObserver: class {
+      constructor(private readonly callback: () => void) {}
+      observe() { observeMutations = this.callback; }
+      disconnect() { observeMutations = null; }
+    },
     setInterval: () => 1, clearInterval() {},
   });
   vm.runInContext(buildAppBootstrapScript(), context);
   const run = (reason: 'active' | 'inactive' | 'background' | 'unmount') => vm.runInContext(buildAppTransitionScript(reason), context);
   const refresh = () => vm.runInContext('window.__SAHIKA_IOS_BRIDGE_V1.refresh()', context);
   return { messages, stoppedKeys, devices, media, context, run, refresh, styles,
-    configure() { configured = true; }, configureLegacy() { configured = true; readyAttribute = false; }, addControls() { controls = true; }, listeners };
+    configure() { configured = true; }, configureLegacy() { configured = true; readyAttribute = false; }, addControls() { controls = true; }, listeners,
+    body, site, page, section, wrapper, element,
+    notifyMutation() { observeMutations?.(); },
+    setHostAvailable(available: boolean) { hostNode = available ? element : null; },
+  };
 }
 
 test('only exact PulseVet HTTPS assistant paths remain in the app', () => {
@@ -108,6 +143,56 @@ test('65.3 readiness also works when only the configured boot shell publishes it
   assert.equal(app.messages.length, 0, 'config alone is not an interactive assistant');
   app.addControls(); app.refresh();
   assert.equal(JSON.parse(app.messages[0]).type, 'SAHIKA_APP_READY');
+});
+
+test('application canvas excludes desktop, mobile, pinned and language branches without moving the assistant', () => {
+  const app = fixture();
+  const desktopHeader = new PageElement('HEADER', app.page);
+  const mobileHeader = new PageElement('DIV', app.page);
+  const languageMenu = new PageElement('NAV', mobileHeader);
+  const title = new PageElement('SECTION', app.page);
+  const footer = new PageElement('FOOTER', app.page);
+  const pinnedMenu = new PageElement('DIV', app.site);
+  const backdrop = new PageElement('DIV', app.body);
+  backdrop.setAttribute('data-pv-sahika-backdrop', '');
+  app.configure(); app.addControls(); app.refresh();
+
+  for (const ancestor of [app.element, app.wrapper, app.section, app.page, app.site, app.body]) {
+    assert.equal(ancestor.hasAttribute('data-sahika-app-path'), true);
+  }
+  for (const chrome of [desktopHeader, mobileHeader, languageMenu, title, footer, pinnedMenu, backdrop]) {
+    assert.equal(chrome.hasAttribute('data-sahika-app-path'), false);
+  }
+  assert.equal(app.element.parentElement, app.wrapper, 'the configured custom element must stay connected in place');
+  assert.equal(backdrop.parentElement, app.body, 'the source-owned background stays connected');
+  assert.equal(app.messages.length, 1);
+});
+
+test('post-ready Wix hydration keeps isolation current after the existing assistant changes ancestors', () => {
+  const app = fixture();
+  app.configure(); app.addControls(); app.refresh();
+  const replacementPage = new PageElement('MAIN', app.site);
+  const replacementWrapper = new PageElement('DIV', replacementPage);
+  new PageElement('HEADER', replacementPage);
+  app.element.attach(replacementWrapper); // Models Wix reconciliation, not a bridge operation.
+  app.notifyMutation();
+
+  assert.equal(replacementPage.hasAttribute('data-sahika-app-path'), true);
+  assert.equal(replacementWrapper.hasAttribute('data-sahika-app-path'), true);
+  for (const removedAncestor of [app.page, app.section, app.wrapper]) {
+    assert.equal(removedAncestor.hasAttribute('data-sahika-app-path'), false);
+  }
+  assert.equal(app.messages.length, 1, 'late hydration must not send duplicate readiness events');
+});
+
+test('ready never reveals a detached assistant before its application path reaches the body', () => {
+  const app = fixture();
+  app.element.parentElement = null;
+  app.configure(); app.addControls(); app.refresh();
+  assert.equal(app.messages.length, 0);
+  app.element.attach(app.wrapper);
+  app.notifyMutation();
+  assert.equal(app.messages.length, 1);
 });
 
 test('text downloads preserve UTF-8 and reject paths, size mismatches and active formats', () => {
