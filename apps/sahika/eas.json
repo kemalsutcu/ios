@@ -15,7 +15,10 @@
     "production": {
       "distribution": "store",
       "environment": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "image": "latest"
+      }
     },
     "simulator": {
       "distribution": "internal",
